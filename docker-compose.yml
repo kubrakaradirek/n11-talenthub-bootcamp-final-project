@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: n11-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123
+      POSTGRES_DB: n11_bootcamp_db
+    ports:
+      - "5432:5432"
+    restart: always
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: n11-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"   # Mikroservislerin RabbitMQ ile haberleşeceği port
+      - "15672:15672" # Tarayıcıdan RabbitMQ paneline erişim portu
+    restart: always
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0.5
+    container_name: n11-keycloak
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    command: start-dev
+    ports:
+      - "8081:8080" # API Gateway 8080'de çalıştığı için Keycloak'u 8081
+    restart: always
