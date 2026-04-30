@@ -19,7 +19,6 @@ import java.util.Arrays;
 @EnableWebFluxSecurity //GATEWAY ŞARTI
 public class SecurityConfig {
 
-    // CORS AYARI: React (Vite) projesine kapıyı açan anahtar
     @Bean
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration corsConfig = new CorsConfiguration();
@@ -37,7 +36,6 @@ public class SecurityConfig {
     }
     @Bean
     public ReactiveJwtDecoder jwtDecoder() {
-        // Buradaki adresin Keycloak adresinle birebir aynı olduğundan emin ol
         return ReactiveJwtDecoders.fromIssuerLocation("http://localhost:8081/realms/microservice-realm");
     }
     // GÜVENLİK FİLTRESİ: Gateway üzerinden geçen trafiği yönetir

@@ -93,6 +93,26 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+			<plugin>
+				<groupId>com.google.cloud.tools</groupId>
+				<artifactId>jib-maven-plugin</artifactId>
+				<version>3.4.0</version>
+				<configuration>
+					<from>
+						<image>eclipse-temurin:21-jre</image>
+					</from>
+					<to>
+						<image>n11bootcamp/api-gateway</image>
+					</to>
+					<container>
+						<ports>
+							<!-- API Gateway portu: 8763 -->
+							<port>8763</port>
+						</ports>
+						<mainClass>com.n11bootcamp.api_gateway.ApiGatewayApplication</mainClass>
+					</container>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
