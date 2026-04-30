@@ -1279,3 +1279,104 @@ com.netflix.discovery.shared.transport.TransportException: Cannot execute reques
 	at org.springframework.boot.SpringApplicationShutdownHook.run(SpringApplicationShutdownHook.java:116)
 	at java.base/java.lang.Thread.run(Thread.java:1583)
 2026-04-30 16:08:59 [SpringApplicationShutdownHook] INFO  c.netflix.discovery.DiscoveryClient - Completed shut down of DiscoveryClient
+2026-04-30 20:28:45 [main] INFO  c.n.s.ShoppingCardIntegrationTest - Starting ShoppingCardIntegrationTest using Java 21.0.10 with PID 26212 (started by Kübra in C:\Users\Pierm\IdeaProjects\n11-talenthub-bootcamp-final-project\shopping-card-service)
+2026-04-30 20:28:45 [main] INFO  c.n.s.ShoppingCardIntegrationTest - No active profile set, falling back to 1 default profile: "default"
+2026-04-30 20:28:45 [main] INFO  o.s.c.c.c.ConfigServerConfigDataLoader - Fetching config from server at : http://localhost:8762
+2026-04-30 20:28:45 [main] INFO  o.s.c.c.c.ConfigServerConfigDataLoader - Located environment: name=shopping-cart-service, profiles=[default], label=null, version=null, state=null
+2026-04-30 20:28:46 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2026-04-30 20:28:46 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-04-30 20:28:46 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 123 ms. Found 1 Redis repository interface.
+2026-04-30 20:28:47 [main] INFO  o.s.cloud.context.scope.GenericScope - BeanFactory id=43bef975-529a-3d50-b979-dbb3970bf594
+2026-04-30 20:28:48 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 0 (http)
+2026-04-30 20:28:48 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-auto-1"]
+2026-04-30 20:28:48 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2026-04-30 20:28:48 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.54]
+2026-04-30 20:28:48 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2026-04-30 20:28:48 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 2866 ms
+2026-04-30 20:28:50 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring TestDispatcherServlet ''
+2026-04-30 20:28:50 [main] INFO  o.s.t.w.s.TestDispatcherServlet - Initializing Servlet ''
+2026-04-30 20:28:50 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 1 endpoint beneath base path '/actuator'
+2026-04-30 20:28:50 [main] INFO  o.s.t.w.s.TestDispatcherServlet - Completed initialization in 26 ms
+2026-04-30 20:28:50 [main] INFO  o.s.c.n.e.c.DiscoveryClientOptionalArgsConfiguration - Eureka HTTP Client uses RestTemplate.
+2026-04-30 20:28:50 [main] WARN  o.s.c.l.c.LoadBalancerCacheAutoConfiguration$LoadBalancerCaffeineWarnLogger - Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath.
+2026-04-30 20:28:50 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-auto-1"]
+2026-04-30 20:28:50 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 53173 (http) with context path '/'
+2026-04-30 20:28:50 [main] INFO  o.s.c.n.e.s.EurekaAutoServiceRegistration - Updating port to 53173
+2026-04-30 20:28:50 [main] INFO  o.s.c.n.eureka.InstanceInfoFactory - Setting initial instance status as: STARTING
+2026-04-30 20:28:51 [main] INFO  c.netflix.discovery.DiscoveryClient - Initializing Eureka in region us-east-1
+2026-04-30 20:28:51 [main] INFO  c.n.d.s.r.aws.ConfigClusterResolver - Resolving eureka endpoints via configuration
+2026-04-30 20:28:51 [main] INFO  c.netflix.discovery.DiscoveryClient - Disable delta property : false
+2026-04-30 20:28:51 [main] INFO  c.netflix.discovery.DiscoveryClient - Single vip registry refresh property : null
+2026-04-30 20:28:51 [main] INFO  c.netflix.discovery.DiscoveryClient - Force full registry fetch : false
+2026-04-30 20:28:51 [main] INFO  c.netflix.discovery.DiscoveryClient - Application is null : false
+2026-04-30 20:28:51 [main] INFO  c.netflix.discovery.DiscoveryClient - Registered Applications size is zero : true
+2026-04-30 20:28:51 [main] INFO  c.netflix.discovery.DiscoveryClient - Application version is -1: true
+2026-04-30 20:28:51 [main] INFO  c.netflix.discovery.DiscoveryClient - Getting all instance registry info from the eureka server
+2026-04-30 20:28:51 [main] INFO  c.netflix.discovery.DiscoveryClient - The response status is 200
+2026-04-30 20:28:51 [main] INFO  c.netflix.discovery.DiscoveryClient - Starting heartbeat executor: renew interval is: 30
+2026-04-30 20:28:51 [main] INFO  c.n.discovery.InstanceInfoReplicator - InstanceInfoReplicator onDemand update allowed rate per min is 4
+2026-04-30 20:28:51 [main] INFO  c.netflix.discovery.DiscoveryClient - Discovery Client initialized at timestamp 1777570131167 with initial instances count: 3
+2026-04-30 20:28:51 [main] INFO  o.s.c.n.e.s.EurekaServiceRegistry - Registering application SHOPPING-CART-SERVICE with eureka with status UP
+2026-04-30 20:28:51 [main] INFO  c.netflix.discovery.DiscoveryClient - Saw local status change event StatusChangeEvent [timestamp=1777570131171, current=UP, previous=STARTING]
+2026-04-30 20:28:51 [DiscoveryClient-InstanceInfoReplicator-%d] INFO  c.netflix.discovery.DiscoveryClient - DiscoveryClient_SHOPPING-CART-SERVICE/Monster:shopping-cart-service:0: registering service...
+2026-04-30 20:28:51 [main] INFO  c.n.s.ShoppingCardIntegrationTest - Started ShoppingCardIntegrationTest in 6.427 seconds (process running for 8.108)
+2026-04-30 20:28:51 [DiscoveryClient-InstanceInfoReplicator-%d] INFO  c.netflix.discovery.DiscoveryClient - DiscoveryClient_SHOPPING-CART-SERVICE/Monster:shopping-cart-service:0 - registration status: 204
+2026-04-30 20:28:51 [main] INFO  c.n.s.service.ShoppingCardService - RabbitMQ'ya mesaj iletildi: Kullanıcı: kubra sepete ürün ekledi: Integration Test Ürünü
+2026-04-30 20:28:51 [main] INFO  c.n.s.service.ShoppingCardService - kubra kullanıcısının sepeti temizlendi.
+2026-04-30 20:28:51 [main] INFO  c.n.s.service.ShoppingCardService - RabbitMQ'ya mesaj iletildi: Kullanıcı: kubra sepete ürün ekledi: Integration Test Ürünü
+2026-04-30 20:28:52 [SpringApplicationShutdownHook] INFO  o.s.c.n.e.s.EurekaServiceRegistry - Unregistering application SHOPPING-CART-SERVICE with eureka with status DOWN
+2026-04-30 20:28:52 [SpringApplicationShutdownHook] INFO  c.netflix.discovery.DiscoveryClient - Saw local status change event StatusChangeEvent [timestamp=1777570132006, current=DOWN, previous=UP]
+2026-04-30 20:28:52 [DiscoveryClient-InstanceInfoReplicator-%d] INFO  c.netflix.discovery.DiscoveryClient - DiscoveryClient_SHOPPING-CART-SERVICE/Monster:shopping-cart-service:0: registering service...
+2026-04-30 20:28:52 [SpringApplicationShutdownHook] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Commencing graceful shutdown. Waiting for active requests to complete
+2026-04-30 20:28:52 [DiscoveryClient-InstanceInfoReplicator-%d] INFO  c.netflix.discovery.DiscoveryClient - DiscoveryClient_SHOPPING-CART-SERVICE/Monster:shopping-cart-service:0 - registration status: 204
+2026-04-30 20:28:52 [tomcat-shutdown] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Graceful shutdown complete
+2026-04-30 20:28:52 [SpringApplicationShutdownHook] INFO  c.netflix.discovery.DiscoveryClient - Shutting down DiscoveryClient ...
+2026-04-30 20:28:55 [SpringApplicationShutdownHook] INFO  c.netflix.discovery.DiscoveryClient - Unregistering ...
+2026-04-30 20:28:55 [SpringApplicationShutdownHook] INFO  c.netflix.discovery.DiscoveryClient - DiscoveryClient_SHOPPING-CART-SERVICE/Monster:shopping-cart-service:0 - deregister  status: 200
+2026-04-30 20:28:55 [SpringApplicationShutdownHook] INFO  c.netflix.discovery.DiscoveryClient - Completed shut down of DiscoveryClient
+2026-04-30 21:23:08 [main] INFO  c.n.s.r.ShoppingCardRepositoryTest - Starting ShoppingCardRepositoryTest using Java 21.0.10 with PID 12976 (started by Kübra in C:\Users\Pierm\IdeaProjects\n11-talenthub-bootcamp-final-project\shopping-card-service)
+2026-04-30 21:23:08 [main] INFO  c.n.s.r.ShoppingCardRepositoryTest - No active profile set, falling back to 1 default profile: "default"
+2026-04-30 21:23:08 [main] INFO  o.s.c.c.c.ConfigServerConfigDataLoader - Fetching config from server at : http://localhost:8762
+2026-04-30 21:23:08 [main] INFO  o.s.c.c.c.ConfigServerConfigDataLoader - Located environment: name=shopping-cart-service, profiles=[default], label=null, version=null, state=null
+2026-04-30 21:23:09 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2026-04-30 21:23:09 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-04-30 21:23:10 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 147 ms. Found 1 Redis repository interface.
+2026-04-30 21:23:10 [main] INFO  o.s.cloud.context.scope.GenericScope - BeanFactory id=b0f985fb-1816-3f2a-953d-3580f34cb204
+2026-04-30 21:23:12 [main] INFO  o.s.c.n.e.c.DiscoveryClientOptionalArgsConfiguration - Eureka HTTP Client uses RestTemplate.
+2026-04-30 21:23:12 [main] WARN  o.s.c.l.c.LoadBalancerCacheAutoConfiguration$LoadBalancerCaffeineWarnLogger - Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath.
+2026-04-30 21:23:12 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 1 endpoint beneath base path '/actuator'
+2026-04-30 21:23:12 [main] INFO  o.s.c.n.eureka.InstanceInfoFactory - Setting initial instance status as: STARTING
+2026-04-30 21:23:12 [main] INFO  c.netflix.discovery.DiscoveryClient - Initializing Eureka in region us-east-1
+2026-04-30 21:23:12 [main] INFO  c.n.d.s.r.aws.ConfigClusterResolver - Resolving eureka endpoints via configuration
+2026-04-30 21:23:12 [main] INFO  c.netflix.discovery.DiscoveryClient - Disable delta property : false
+2026-04-30 21:23:12 [main] INFO  c.netflix.discovery.DiscoveryClient - Single vip registry refresh property : null
+2026-04-30 21:23:12 [main] INFO  c.netflix.discovery.DiscoveryClient - Force full registry fetch : false
+2026-04-30 21:23:12 [main] INFO  c.netflix.discovery.DiscoveryClient - Application is null : false
+2026-04-30 21:23:12 [main] INFO  c.netflix.discovery.DiscoveryClient - Registered Applications size is zero : true
+2026-04-30 21:23:12 [main] INFO  c.netflix.discovery.DiscoveryClient - Application version is -1: true
+2026-04-30 21:23:12 [main] INFO  c.netflix.discovery.DiscoveryClient - Getting all instance registry info from the eureka server
+2026-04-30 21:23:12 [main] INFO  c.netflix.discovery.DiscoveryClient - The response status is 200
+2026-04-30 21:23:12 [main] INFO  c.netflix.discovery.DiscoveryClient - Starting heartbeat executor: renew interval is: 30
+2026-04-30 21:23:12 [main] INFO  c.n.discovery.InstanceInfoReplicator - InstanceInfoReplicator onDemand update allowed rate per min is 4
+2026-04-30 21:23:12 [main] INFO  c.netflix.discovery.DiscoveryClient - Discovery Client initialized at timestamp 1777573392832 with initial instances count: 2
+2026-04-30 21:23:12 [main] INFO  o.s.c.n.e.s.EurekaServiceRegistry - Registering application SHOPPING-CART-SERVICE with eureka with status UP
+2026-04-30 21:23:12 [main] INFO  c.netflix.discovery.DiscoveryClient - Saw local status change event StatusChangeEvent [timestamp=1777573392835, current=UP, previous=STARTING]
+2026-04-30 21:23:12 [DiscoveryClient-InstanceInfoReplicator-%d] INFO  c.netflix.discovery.DiscoveryClient - DiscoveryClient_SHOPPING-CART-SERVICE/Monster:shopping-cart-service:8765: registering service...
+2026-04-30 21:23:12 [main] INFO  c.n.s.r.ShoppingCardRepositoryTest - Started ShoppingCardRepositoryTest in 5.118 seconds (process running for 6.818)
+2026-04-30 21:23:12 [DiscoveryClient-InstanceInfoReplicator-%d] INFO  c.netflix.discovery.DiscoveryClient - DiscoveryClient_SHOPPING-CART-SERVICE/Monster:shopping-cart-service:8765 - registration status: 204
+2026-04-30 21:23:13 [SpringApplicationShutdownHook] INFO  o.s.c.n.e.s.EurekaServiceRegistry - Unregistering application SHOPPING-CART-SERVICE with eureka with status DOWN
+2026-04-30 21:23:13 [SpringApplicationShutdownHook] INFO  c.netflix.discovery.DiscoveryClient - Saw local status change event StatusChangeEvent [timestamp=1777573393905, current=DOWN, previous=UP]
+2026-04-30 21:23:13 [DiscoveryClient-InstanceInfoReplicator-%d] INFO  c.netflix.discovery.DiscoveryClient - DiscoveryClient_SHOPPING-CART-SERVICE/Monster:shopping-cart-service:8765: registering service...
+2026-04-30 21:23:13 [DiscoveryClient-InstanceInfoReplicator-%d] INFO  c.netflix.discovery.DiscoveryClient - DiscoveryClient_SHOPPING-CART-SERVICE/Monster:shopping-cart-service:8765 - registration status: 204
+2026-04-30 21:23:13 [SpringApplicationShutdownHook] INFO  c.netflix.discovery.DiscoveryClient - Shutting down DiscoveryClient ...
+2026-04-30 21:23:16 [SpringApplicationShutdownHook] INFO  c.netflix.discovery.DiscoveryClient - Unregistering ...
+2026-04-30 21:23:16 [SpringApplicationShutdownHook] INFO  c.netflix.discovery.DiscoveryClient - DiscoveryClient_SHOPPING-CART-SERVICE/Monster:shopping-cart-service:8765 - deregister  status: 200
+2026-04-30 21:23:16 [SpringApplicationShutdownHook] INFO  c.netflix.discovery.DiscoveryClient - Completed shut down of DiscoveryClient
+2026-04-30 21:23:25 [main] INFO  c.n.s.c.ShoppingCardControllerTest - Starting ShoppingCardControllerTest using Java 21.0.10 with PID 3320 (started by Kübra in C:\Users\Pierm\IdeaProjects\n11-talenthub-bootcamp-final-project\shopping-card-service)
+2026-04-30 21:23:25 [main] INFO  c.n.s.c.ShoppingCardControllerTest - No active profile set, falling back to 1 default profile: "default"
+2026-04-30 21:23:25 [main] INFO  o.s.c.c.c.ConfigServerConfigDataLoader - Fetching config from server at : http://localhost:8762
+2026-04-30 21:23:25 [main] INFO  o.s.c.c.c.ConfigServerConfigDataLoader - Located environment: name=shopping-cart-service, profiles=[default], label=null, version=null, state=null
+2026-04-30 21:23:27 [main] INFO  o.s.b.t.m.w.SpringBootMockServletContext - Initializing Spring TestDispatcherServlet ''
+2026-04-30 21:23:27 [main] INFO  o.s.t.w.s.TestDispatcherServlet - Initializing Servlet ''
+2026-04-30 21:23:27 [main] INFO  o.s.t.w.s.TestDispatcherServlet - Completed initialization in 2 ms
+2026-04-30 21:23:27 [main] INFO  c.n.s.c.ShoppingCardControllerTest - Started ShoppingCardControllerTest in 3.057 seconds (process running for 4.9)

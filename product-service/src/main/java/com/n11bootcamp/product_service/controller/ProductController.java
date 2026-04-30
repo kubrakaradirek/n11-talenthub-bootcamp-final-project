@@ -33,29 +33,12 @@ public class ProductController {
         return ResponseEntity.ok("Ürün başarıyla silindi.");
     }
 
-    /*@GetMapping
-    public ResponseEntity<List<Product>> getAllProducts() {
-        return ResponseEntity.ok(productService.getAllProducts());
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable Long id) {
-        return ResponseEntity.ok(productService.getProductById(id));
-    }
-
-    // Pagination API
-    /*@GetMapping("/paged")
-    public ResponseEntity<Page<Product>> getPagedProducts(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(productService.getPagedProducts(page, size));
-    }*/
     @GetMapping
     public ResponseEntity<Page<Product>> getAllProducts(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "8") int size) { // Varsayılanı 8 yaptık
+            @RequestParam(defaultValue = "8") int size) {
 
-        // Artık React ana adrese geldiğinde bile ona 8'erli sayfalama yapıp göndereceğiz
+
         return ResponseEntity.ok(productService.getPagedProducts(page, size));
     }
 
