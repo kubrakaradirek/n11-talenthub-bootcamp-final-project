@@ -33,3 +33,11 @@ services:
     ports:
       - "8081:8080" # API Gateway 8080'de çalıştığı için Keycloak'u 8081
     restart: always
+
+  # --- Redis Servisi ---
+  redis:
+    image: redis:latest
+    container_name: n11-redis
+    ports:
+      - "6379:6379"
+    restart: always

@@ -1,0 +1,109 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap');
+
+.detail-page-container {
+    width: 100%;
+    max-width: 1300px;
+    margin: 20px auto 80px auto;
+    font-family: 'Montserrat', sans-serif;
+    color: #e2e8f0; /* Koyu temada metinler açık renk okunsun */
+}
+
+.breadcrumb { font-size: 13px; color: #94a3b8; margin-bottom: 30px; }
+.breadcrumb a { color: #cbd5e1; text-decoration: none; transition: 0.2s; }
+.breadcrumb a:hover { color: #ff4757; }
+
+/* ÜST BÖLÜM (Görsel ve Fiyat) - Karanlık Lüks Tema */
+.product-top-row {
+    display: flex;
+    gap: 50px;
+    margin-bottom: 50px;
+    background: #1e293b;
+    padding: 30px;
+    border-radius: 16px;
+    border: 1px solid #334155;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+/* Sol Taraf Görsel Kutusu */
+.product-image-gallery { flex: 1; display: flex; flex-direction: column; gap: 15px; }
+
+/* Büyük Görsel Kutusu - İçi Bembeyaz Oldu */
+.main-image-box {
+    width: 100%;
+    height: 600px;
+    background: #ffffff; /* Resimlerin arka planı ile aynı renk (Beyaz) */
+    border: 1px solid #334155; /* Dış çerçevesi koyu lüks renk */
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.main-image-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+.thumbnails { display: flex; gap: 10px; }
+/* Küçük Resim Kareleri (Thumbnails) - İçleri Bembeyaz Oldu */
+.thumb {
+    width: 70px;
+    height: 70px;
+    background: #ffffff; /* İçi beyaz */
+    border: 1px solid #334155; /* Dışı koyu */
+    border-radius: 4px;
+    padding: 5px;
+    cursor: pointer;
+}
+.thumb.active { border: 2px solid #ff4757; }
+.thumb img { width: 100%; height: 100%; object-fit: contain; }
+/* Sağ Taraf - Satın Alma Bilgileri */
+.product-buy-info { flex: 1.2; display: flex; flex-direction: column; }
+
+.detail-title { font-size: 24px; font-weight: 600; color: #f1f5f9; margin-bottom: 25px; line-height: 1.4; }
+
+.price-box { margin-bottom: 30px; }
+.old-price { font-size: 15px; color: #94a3b8; text-decoration: line-through; margin-bottom: 5px; }
+.discount-label { font-size: 13px; font-weight: 800; color: #ff4757; margin-bottom: 5px; letter-spacing: 1px; }
+.current-price { font-size: 42px; font-weight: 800; color: #f8fafc; }
+
+.mini-specs { display: flex; gap: 15px; margin-bottom: 30px; }
+.spec-box { background: #0f172a; border: 1px solid #334155; border-radius: 4px; padding: 10px 20px; display: flex; flex-direction: column; align-items: center; min-width: 90px; }
+.spec-label { font-size: 11px; color: #94a3b8; margin-bottom: 4px; }
+.spec-value { font-size: 13px; font-weight: 700; color: #e2e8f0; }
+
+.color-selection { margin-bottom: 30px; font-size: 15px; color: #cbd5e1; }
+.color-thumb { width: 60px; height: 60px; border: 2px solid #ff4757; border-radius: 4px; padding: 2px; margin-top: 10px; }
+.color-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+.add-to-cart-mega { width: 100%; background-color: #ff4757; color: white; border: none; padding: 20px; border-radius: 6px; font-size: 18px; font-weight: 700; cursor: pointer; transition: 0.3s; margin-bottom: 30px; }
+.add-to-cart-mega:hover { background-color: #ff6b81; }
+
+.delivery-banner { display: flex; align-items: center; background-color: #0f172a; border: 1px solid #334155; padding: 15px 20px; border-radius: 6px; gap: 15px; }
+.delivery-icon { font-size: 24px; }
+.delivery-texts { display: flex; flex-direction: column; flex-grow: 1; }
+.delivery-texts strong { font-size: 14px; color: #e2e8f0; margin-bottom: 3px; }
+.delivery-texts span { font-size: 12px; color: #94a3b8; }
+.delivery-arrow { font-weight: bold; color: #94a3b8; }
+
+/* ALT BÖLÜM (Sekmeler) */
+.product-bottom-row { margin-top: 40px; border-top: 1px solid #334155; }
+.tabs-header { display: flex; justify-content: center; gap: 60px; border-bottom: 1px solid #334155; }
+.tab-item { padding: 20px 0; font-size: 15px; font-weight: 700; color: #94a3b8; cursor: pointer; position: relative; transition: 0.3s; }
+.tab-item.active { color: #ff4757; }
+.tab-item.active::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 3px; background-color: #ff4757; }
+
+.tab-content { background-color: #1e293b; border: 1px solid #334155; border-top: none; padding: 50px; border-radius: 0 0 12px 12px; }
+.desc-box { background: #0f172a; border: 1px solid #334155; padding: 40px; border-radius: 8px; margin-bottom: 40px; }
+.desc-box h3 { font-size: 20px; margin-bottom: 25px; color: #f1f5f9; }
+.desc-box h4 { font-size: 16px; margin-bottom: 15px; color: #f1f5f9; }
+.desc-box p { font-size: 14px; color: #cbd5e1; line-height: 1.8; }
+.publisher-note { margin-top: 40px; text-align: center; font-size: 13px; color: #94a3b8; border-top: 1px dashed #334155; padding-top: 20px; }
+
+.tech-specs-box { background: #0f172a; border: 1px solid #334155; padding: 40px; border-radius: 8px; }
+.tech-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+.tech-header h3 { font-size: 20px; color: #f1f5f9; }
+.more-info { color: #ff4757; font-size: 14px; font-weight: 600; cursor: pointer; }
+.tech-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.tech-row { display: flex; border-bottom: 1px solid #334155; padding-bottom: 15px; }
+.t-key { flex: 1; font-size: 14px; color: #cbd5e1; }
+.t-val { flex: 1; font-size: 14px; color: #f1f5f9; font-weight: 600; text-align: right; }
+.t-val.highlight { color: #ff4757; }
