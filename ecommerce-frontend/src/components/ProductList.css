@@ -58,7 +58,7 @@
     justify-content: center;
     margin-bottom: 20px;
     padding: 10px;
-    background: #0f172a; /* Resimlerin arkası daha koyu */
+    background: #ffffff; /* Koyu lacivertti, beyaz yaptık */
     border-radius: 8px;
     border: 1px solid #334155;
 }
@@ -70,7 +70,11 @@
     transition: transform 0.3s ease;
 }
 
-.product-card:hover .image-wrapper img { transform: scale(1.08); }
+.product-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.4);
+    border-color: #ffc107; /* Kırmızıydı, sarı (n11/KubaShop sarısı) yaptık */
+}
 
 /* Metinler ve Fiyat */
 .product-name {
@@ -106,18 +110,18 @@
 }
 
 .current-price {
-    font-size: 22px;
+    font-size: 18px; /* 22px'den 18px'e düşürdük, artık devasa değil */
     font-weight: 800;
-    color: #f8fafc; /* Açık renk fiyat */
+    color: #ffc107; /* Fiyatları sarı yaparak listelemeye renk kattık */
     white-space: nowrap;
     line-height: 1;
 }
 
 /* Kargo Etiketi */
 .shipping-badge {
-    background: #0f172a; /* Karanlık temaya uygun arkaplan */
-    color: #ff4757;
-    border: 1px solid #ff4757;
+    background: #1e293b;
+    color: #ffc107; /* Yazı rengi sarı */
+    border: 1px solid #ffc107; /* Çerçeve sarı */
     padding: 6px 16px;
     border-radius: 4px;
     font-size: 12px;

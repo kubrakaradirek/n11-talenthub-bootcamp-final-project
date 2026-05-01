@@ -14,4 +14,6 @@ public class CardItem implements Serializable {
     private String title;
     private int quantity;
     private double price;
+    private String imageUrl;
+    private String color;
 }

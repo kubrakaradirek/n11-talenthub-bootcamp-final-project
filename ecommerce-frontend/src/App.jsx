@@ -4,12 +4,12 @@ import ProductList from './components/ProductList';
 import ProductDetail from './components/ProductDetail';
 import Login from './components/Login';
 import Register from './components/Register';
+import CartPage from './components/CartPage'; // YENİ EKLENDİ
 import './App.css';
 
 function App() {
     const [loggedInUser, setLoggedInUser] = useState(null);
 
-    // Kullanıcı adını kontrol eden yardımcı fonksiyon
     const checkUser = () => {
         const user = localStorage.getItem("kuba_username");
         if (user) {
@@ -19,12 +19,10 @@ function App() {
         }
     };
 
-    // Sayfa ilk açıldığında kontrol et
     useEffect(() => {
         checkUser();
     }, []);
 
-    // Çıkış yapma fonksiyonu
     const handleLogout = () => {
         localStorage.removeItem("kuba_token");
         localStorage.removeItem("kuba_username");
@@ -48,7 +46,11 @@ function App() {
                                 <div className="auth-links">
                                     {loggedInUser ? (
                                         <>
-                                            {/* Kullanıcı adını büyük harfle ve vurgulu gösterelim */}
+                                            {/* SEPETİM LİNKİ BURAYA EKLENDİ */}
+                                            <Link to="/sepet" style={{color: '#2ecc71', fontWeight: 'bold', marginRight: '15px'}}>
+                                                🛒 Sepetim
+                                            </Link>
+
                                             <span style={{color: '#ff4757', fontWeight: '800', textTransform: 'uppercase'}}>
                                                 HOŞGELDİN, {loggedInUser}
                                             </span>
@@ -76,6 +78,8 @@ function App() {
                         <Route path="/product/:id" element={<ProductDetail />} />
                         <Route path="/login" element={<Login />} />
                         <Route path="/register" element={<Register />} />
+                        {/* SEPET ROTASI BURAYA EKLENDİ */}
+                        <Route path="/sepet" element={<CartPage />} />
                     </Routes>
                 </div>
             </div>

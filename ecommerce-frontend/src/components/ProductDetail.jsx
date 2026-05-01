@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import './ProductDetail.css';
+import Swal from 'sweetalert2';
 
 function ProductDetail() {
     const { id } = useParams();
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('aciklama');
+    const navigate = useNavigate();
 
     useEffect(() => {
         setLoading(true);
@@ -25,19 +27,70 @@ function ProductDetail() {
             });
     }, [id]);
 
+    const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+    });
+    const handleAddToCart = async (e, productId, productTitle) => {
+        if (e) e.preventDefault();
+
+        const username = localStorage.getItem("kuba_username");
+        const token = localStorage.getItem("kuba_token");
+
+        if (!username || !token) {
+            // Giriş yap uyarısını da güzelleştirelim
+            Swal.fire({
+                icon: 'warning',
+                title: 'Giriş Gerekli',
+                text: 'Sepete ürün eklemek için lütfen giriş yapın!',
+                confirmButtonColor: '#ff4d4d' // KubaShop kırmızısı
+            }).then(() => {
+                navigate('/login');
+            });
+            return;
+        }
+
+        try {
+            const response = await fetch(`http://localhost:8763/api/shopping-cart/${username}/add?productId=${productId}&quantity=1`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                // İŞTE BURASI: Ürün adıyla birlikte başarılı mesajı!
+                Toast.fire({
+                    icon: 'success',
+                    title: `${productTitle} sepete eklendi! 🛒`
+                });
+            } else {
+                Toast.fire({
+                    icon: 'error',
+                    title: 'Ürün eklenirken bir hata oluştu.'
+                });
+            }
+        } catch (error) {
+            console.error("Sepete ekleme hatası:", error);
+            Toast.fire({
+                icon: 'error',
+                title: 'Sunucuya bağlanılamadı.'
+            });
+        }
+    };
     if (loading) return <div className="loading-spinner">Ürün detayları hazırlanıyor... ⏳</div>;
     if (!product) return <div className="error-text">Aradığınız ürün bulunamadı.</div>;
 
     return (
         <div className="detail-page-container">
-            {/* Breadcrumb */}
             <div className="breadcrumb">
                 <Link to="/">Anasayfa</Link> &gt; <span>Ev & Yaşam</span> &gt; <span>{product.category || 'Kategori'}</span> &gt; <span>{product.brand || 'Marka'}</span> &gt; <strong>{product.title}</strong>
             </div>
 
-            {/* ÜST BÖLÜM: Görsel ve Satın Alma */}
             <div className="product-top-row">
-                {/* Sol Taraf: Görsel ve Küçük Resimler */}
                 <div className="product-image-gallery">
                     <div className="main-image-box">
                         <img
@@ -46,14 +99,12 @@ function ProductDetail() {
                             onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?q=80&w=800'; }}
                         />
                     </div>
-                    {/* Görsel uyumu için küçük resim (Thumbnail) alanı */}
                     <div className="thumbnails">
                         <div className="thumb active"><img src={product.img} alt="thumb1" /></div>
                         <div className="thumb"><img src={product.img} alt="thumb2" /></div>
                     </div>
                 </div>
 
-                {/* Sağ Taraf: Satın Alma Bilgileri */}
                 <div className="product-buy-info">
                     <h1 className="detail-title">
                         {product.title}
@@ -83,7 +134,7 @@ function ProductDetail() {
                         </div>
                     </div>
 
-                    <button className="add-to-cart-mega">
+                    <button className="add-to-cart-mega" onClick={(e) => handleAddToCart(e, id, product.title)}>
                         + Sepete Ekle
                     </button>
 
@@ -98,7 +149,6 @@ function ProductDetail() {
                 </div>
             </div>
 
-            {/* ALT BÖLÜM: Sekmeler (Tabs) ve Açıklamalar */}
             <div className="product-bottom-row">
                 <div className="tabs-header">
                     <div

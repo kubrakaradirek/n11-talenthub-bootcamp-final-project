@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './ProductList.css';
+import Swal from 'sweetalert2';
 
 function ProductList() {
     const [products, setProducts] = useState([]);
     const [currentPage, setCurrentPage] = useState(0);
     const [totalPages, setTotalPages] = useState(1);
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
 
     useEffect(() => {
         setLoading(true);
@@ -23,12 +25,65 @@ function ProductList() {
                 setLoading(false);
             });
     }, [currentPage]);
+    const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+    });
+    const handleAddToCart = async (e, productId, productTitle) => {
+        if (e) e.preventDefault();
+
+        const username = localStorage.getItem("kuba_username");
+        const token = localStorage.getItem("kuba_token");
+
+        if (!username || !token) {
+            // Giriş yap uyarısını da güzelleştirelim
+            Swal.fire({
+                icon: 'warning',
+                title: 'Giriş Gerekli',
+                text: 'Sepete ürün eklemek için lütfen giriş yapın!',
+                confirmButtonColor: '#ff4d4d' // KubaShop kırmızısı
+            }).then(() => {
+                navigate('/login');
+            });
+            return;
+        }
+
+        try {
+            const response = await fetch(`http://localhost:8763/api/shopping-cart/${username}/add?productId=${productId}&quantity=1`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                // İŞTE BURASI: Ürün adıyla birlikte başarılı mesajı!
+                Toast.fire({
+                    icon: 'success',
+                    title: `${productTitle} sepete eklendi! 🛒`
+                });
+            } else {
+                Toast.fire({
+                    icon: 'error',
+                    title: 'Ürün eklenirken bir hata oluştu.'
+                });
+            }
+        } catch (error) {
+            console.error("Sepete ekleme hatası:", error);
+            Toast.fire({
+                icon: 'error',
+                title: 'Sunucuya bağlanılamadı.'
+            });
+        }
+    };
 
     if (loading) return <div className="loading-text">KubaShop Yükleniyor... 🚀</div>;
 
     return (
         <div className="home-container">
-            {/* Çift logoyu kaldırdık, yerine şık bir karşılama afişi ekledik */}
             <div className="home-banner">
                 <h2>Eviniz İçin En İyisi</h2>
                 <p>KubaShop Güvencesiyle İncele ve Anında Satın Al</p>
@@ -58,7 +113,10 @@ function ProductList() {
                                         <span className="current-price">{product.price.toLocaleString()} TL</span>
                                     </div>
                                     <span className="shipping-badge">Kargo Bedava</span>
-                                    <button className="buy-btn">Sepete Ekle</button>
+
+                                    <button className="buy-btn" onClick={(e) => handleAddToCart(e, product.id, product.title)}>
+                                        Sepete Ekle
+                                    </button>
                                 </div>
                             </div>
                         </Link>
@@ -66,7 +124,6 @@ function ProductList() {
                 })}
             </div>
 
-            {/* Sayfalama (Pagination) */}
             <div className="pagination-wrapper">
                 <button
                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 0))}

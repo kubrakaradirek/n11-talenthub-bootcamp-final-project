@@ -48,8 +48,8 @@ public class SecurityConfig {
                         .pathMatchers("/eureka/**").permitAll() // Eureka paneli açık
                         .pathMatchers("/api/user/signup", "/api/user/signin").permitAll() // Kayıt ve Giriş açık
                         .pathMatchers(HttpMethod.GET, "/api/products/**").permitAll() // Ürün listeleme HERKESE açık
-
-                        // En sona "diğer her şey için giriş yap" kuralı tanımlanır.
+                        .pathMatchers(HttpMethod.GET, "/api/stock/**").permitAll()
+                        .pathMatchers("/api/shopping-cart/**").permitAll()
                         .anyExchange().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));

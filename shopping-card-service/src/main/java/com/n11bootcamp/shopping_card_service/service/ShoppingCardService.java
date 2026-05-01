@@ -36,15 +36,21 @@ public class ShoppingCardService {
     public ShoppingCard addToCart(String username, Long productId, int quantity) {
         ShoppingCard cart = getCart(username);
 
-        // Product Service'den ürün detaylarını çekme
         try {
+            // 1. Product Service'den tüm veriyi çekiyorsun (HARİKA KISIM BURASI)
             Map productData = restTemplate.getForObject(PRODUCT_SERVICE_URL + productId, HashMap.class);
             if (productData == null) throw new RuntimeException("Product not found");
 
+            // 2. Gelen veriden ihtiyacın olanları ayrıştır
             double price = Double.parseDouble(productData.get("price").toString());
             String title = productData.get("title") != null ? productData.get("title").toString() : "Unknown Product";
 
-            // Sepette bu ürün zaten varsa miktarını artır, yoksa yeni ekle
+            // YENİ EKLENEN: Resim ve Rengi de RestTemplate'den gelen datadan al!
+            String imageUrl = productData.get("img") != null ? productData.get("img").toString() : "";
+            // Eğer Product servisinde color yoksa şimdilik "Standart" basıyoruz.
+            String color = productData.get("color") != null ? productData.get("color").toString() : "Standart";
+
+            // 3. Sepette bu ürün zaten varsa miktarını artır
             Optional<CardItem> existingItem = cart.getItems().stream()
                     .filter(item -> item.getProductId().equals(productId))
                     .findFirst();
@@ -52,14 +58,15 @@ public class ShoppingCardService {
             if (existingItem.isPresent()) {
                 existingItem.get().setQuantity(existingItem.get().getQuantity() + quantity);
             } else {
-                cart.getItems().add(new CardItem(productId, title, quantity, price));
+                // YENİ EKLENEN: CardItem oluştururken imageUrl ve color da gönder!
+                cart.getItems().add(new CardItem(productId, title, quantity, price, imageUrl, color));
             }
 
             // Toplam fiyatı güncelle ve Redis'e kaydet
             cart.calculateTotalPrice();
             ShoppingCard savedCart = cartRepository.save(cart);
 
-            // RabbitMQ'ya mesaj gönder (Stock servisi vb. için)
+            // RabbitMQ'ya mesaj gönder
             String message = "Kullanıcı: " + username + " sepete ürün ekledi: " + title;
             rabbitTemplate.convertAndSend(RabbitMQConfig.CART_QUEUE, message);
             log.info("RabbitMQ'ya mesaj iletildi: {}", message);
@@ -76,5 +83,41 @@ public class ShoppingCardService {
     public void clearCart(String username) {
         cartRepository.deleteById(username);
         log.info("{} kullanıcısının sepeti temizlendi.", username);
+    }
+    public ShoppingCard updateQuantity(String username, Long productId, int quantity) {
+        // 1. Mevcut sepeti getir
+        ShoppingCard cart = getCart(username);
+
+        // 2. Sepetteki ilgili ürünü bul ve miktarını güncelle
+        cart.getItems().stream()
+                .filter(item -> item.getProductId().equals(productId))
+                .findFirst()
+                .ifPresent(item -> item.setQuantity(quantity));
+
+        // 3. Toplam fiyatı yeniden hesapla
+        recalculateTotalPrice(cart);
+
+        // 4. Güncel sepeti Redis'e/DB'ye geri kaydet
+        return cartRepository.save(cart);
+    }
+    // oplam Fiyatı Yeniden Hesaplayan Metot
+    private void recalculateTotalPrice(ShoppingCard cart) {
+        double total = cart.getItems().stream()
+                .mapToDouble(item -> item.getPrice() * item.getQuantity())
+                .sum();
+        cart.setTotalPrice(total);
+    }
+
+    public ShoppingCard removeItem(String username, Long productId) {
+        ShoppingCard cart = getCart(username);
+
+        // Ürünü listeden productId'ye göre bul ve çıkar
+        cart.getItems().removeIf(item -> item.getProductId().equals(productId));
+
+        // Toplam fiyatı tekrar hesapla
+        recalculateTotalPrice(cart);
+
+        // Güncel sepeti kaydet ve dön
+        return cartRepository.save(cart);
     }
 }

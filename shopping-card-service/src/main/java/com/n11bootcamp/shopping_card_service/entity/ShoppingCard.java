@@ -1,10 +1,13 @@
 package com.n11bootcamp.shopping_card_service.entity;
 
+import jakarta.persistence.Entity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
+import org.springframework.web.bind.annotation.CrossOrigin;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
