@@ -9,18 +9,22 @@ function ProductDetail() {
     const { id } = useParams();
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
     const [activeTab, setActiveTab] = useState('aciklama');
     const navigate = useNavigate();
 
     useEffect(() => {
         setLoading(true);
+        setError('');
         getProductById(id)
             .then(data => {
                 setProduct(data);
-                setLoading(false);
             })
             .catch(error => {
                 console.error("Hata:", error);
+                setError('Ürün detaylarına şu an ulaşılamıyor, lütfen tekrar deneyin.');
+            })
+            .finally(() => {
                 setLoading(false);
             });
     }, [id]);
@@ -32,6 +36,7 @@ function ProductDetail() {
         timer: 3000,
         timerProgressBar: true,
     });
+
     const handleAddToCart = async (e, productId, productTitle) => {
         if (e) e.preventDefault();
 
@@ -39,12 +44,11 @@ function ProductDetail() {
         const token = localStorage.getItem("kuba_token");
 
         if (!username || !token) {
-            // Giriş yap uyarısını da güzelleştirelim
             Swal.fire({
                 icon: 'warning',
                 title: 'Giriş Gerekli',
                 text: 'Sepete ürün eklemek için lütfen giriş yapın!',
-                confirmButtonColor: '#ff4d4d' // KubaShop kırmızısı
+                confirmButtonColor: '#e11d2e'
             }).then(() => {
                 navigate('/login');
             });
@@ -55,7 +59,7 @@ function ProductDetail() {
             await addToCart(username, productId, 1);
             Toast.fire({
                 icon: 'success',
-                title: `${productTitle} sepete eklendi! 🛒`
+                title: `${productTitle} sepete eklendi!`
             });
         } catch (error) {
             console.error("Sepete ekleme hatası:", error);
@@ -65,7 +69,29 @@ function ProductDetail() {
             });
         }
     };
-    if (loading) return <div className="loading-spinner">Ürün detayları hazırlanıyor... ⏳</div>;
+
+    if (loading) {
+        return (
+            <div className="detail-state">
+                <div className="lux-loader"></div>
+                <h2>Ürün detayları hazırlanıyor...</h2>
+                <p>Seçili ürün bilgileri yükleniyor.</p>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="detail-state error-state">
+                <span className="state-badge">Ürün Hatası</span>
+                <h2>{error}</h2>
+                <button className="retry-btn" onClick={() => navigate('/')}>
+                    Vitrine Dön
+                </button>
+            </div>
+        );
+    }
+
     if (!product) return <div className="error-text">Aradığınız ürün bulunamadı.</div>;
 
     return (
@@ -90,9 +116,8 @@ function ProductDetail() {
                 </div>
 
                 <div className="product-buy-info">
-                    <h1 className="detail-title">
-                        {product.title}
-                    </h1>
+                    <span className="lux-label">KubaShop Özel Seçki</span>
+                    <h1 className="detail-title">{product.title}</h1>
 
                     <div className="price-box">
                         <div className="old-price">{(product.price * 1.15).toFixed(0)} TL</div>
@@ -119,13 +144,13 @@ function ProductDetail() {
                     </div>
 
                     <button className="add-to-cart-mega" onClick={(e) => handleAddToCart(e, id, product.title)}>
-                        + Sepete Ekle
+                        Sepete Ekle
                     </button>
 
                     <div className="delivery-banner">
-                        <div className="delivery-icon">📦</div>
+                        <div className="delivery-icon">K</div>
                         <div className="delivery-texts">
-                            <strong>KubaShop e-Commerce - Ücretsiz Kargo</strong>
+                            <strong>KubaShop Express - Ücretsiz Kargo</strong>
                             <span>Tahmini kargoya verilme: 2 gün içinde</span>
                         </div>
                         <div className="delivery-arrow">&gt;</div>
@@ -135,22 +160,13 @@ function ProductDetail() {
 
             <div className="product-bottom-row">
                 <div className="tabs-header">
-                    <div
-                        className={`tab-item ${activeTab === 'aciklama' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('aciklama')}
-                    >
+                    <div className={`tab-item ${activeTab === 'aciklama' ? 'active' : ''}`} onClick={() => setActiveTab('aciklama')}>
                         Ürün Açıklaması
                     </div>
-                    <div
-                        className={`tab-item ${activeTab === 'iade' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('iade')}
-                    >
+                    <div className={`tab-item ${activeTab === 'iade' ? 'active' : ''}`} onClick={() => setActiveTab('iade')}>
                         İptal & İade Bilgileri
                     </div>
-                    <div
-                        className={`tab-item ${activeTab === 'odeme' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('odeme')}
-                    >
+                    <div className={`tab-item ${activeTab === 'odeme' ? 'active' : ''}`} onClick={() => setActiveTab('odeme')}>
                         Ödeme Kolaylıkları
                     </div>
                 </div>
@@ -163,7 +179,7 @@ function ProductDetail() {
                                 <h4>Ayrıntılar</h4>
                                 <p>{product.description || 'Bu ürün için henüz detaylı bir açıklama girilmemiştir.'}</p>
                                 <div className="publisher-note">
-                                    <span style={{color: '#ff4757'}}>KubaShop</span> tarafından yayınlanmıştır!
+                                    <span>KubaShop</span> tarafından yayınlanmıştır.
                                 </div>
                             </div>
 
@@ -198,7 +214,7 @@ function ProductDetail() {
                         <div className="tab-pane">
                             <div className="desc-box">
                                 <h3>İptal & İade Koşulları</h3>
-                                <p>KubaShop güvencesiyle satın aldığınız ürünleri, teslimat tarihinden itibaren 15 gün içerisinde ücretsiz olarak iade edebilirsiniz. İade işlemleriniz için "Hesabım" menüsünden talep oluşturmanız yeterlidir.</p>
+                                <p>KubaShop güvencesiyle satın aldığınız ürünleri, teslimat tarihinden itibaren 15 gün içerisinde ücretsiz olarak iade edebilirsiniz.</p>
                             </div>
                         </div>
                     )}

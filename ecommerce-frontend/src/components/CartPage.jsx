@@ -7,6 +7,7 @@ import { getCart, removeCartItem, updateCartQuantity } from '../services/cartSer
 const CartPage = () => {
     const [cart, setCart] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -16,6 +17,9 @@ const CartPage = () => {
     const fetchCart = async () => {
         const username = localStorage.getItem("kuba_username");
         const token = localStorage.getItem("kuba_token");
+
+        setLoading(true);
+        setError('');
 
         if (!username || !token) {
             setLoading(false);
@@ -27,50 +31,66 @@ const CartPage = () => {
             setCart(data);
         } catch (error) {
             console.error("Sepet yüklenemedi:", error);
+            setError('Sepet bilgilerine şu an ulaşılamıyor, lütfen tekrar deneyin.');
         } finally {
             setLoading(false);
         }
     };
 
-    // --- 1. MİKTAR GÜNCELLEME METODU (+ / -) ---
     const handleUpdateQuantity = async (productId, currentQuantity, change) => {
         const username = localStorage.getItem("kuba_username");
         const newQuantity = currentQuantity + change;
 
-        // Adet 1'in altına düşemez
         if (newQuantity < 1) return;
 
         try {
             await updateCartQuantity(username, productId, newQuantity);
-            // İstek başarılı olunca sepeti yeniden çek ki sağdaki "Toplam Fiyat" değişsin
             fetchCart();
         } catch (error) {
             console.error("Miktar güncellenirken hata:", error);
+            setError('Ürün adedi güncellenemedi, lütfen tekrar deneyin.');
         }
     };
 
-    // --- 2. TEKİL ÜRÜN SİLME METODU (Çöp Kutusu) ---
     const handleRemoveItem = async (productId) => {
         const username = localStorage.getItem("kuba_username");
 
         try {
             await removeCartItem(username, productId);
-            fetchCart(); // Sildikten sonra sepeti güncelle
+            fetchCart();
         } catch (error) {
             console.error("Ürün silinirken hata:", error);
+            setError('Ürün sepetten silinemedi, lütfen tekrar deneyin.');
         }
     };
 
     if (loading) {
-        return <div className="cart-page-empty"><h2>Sepetim Yükleniyor... ⏳</h2></div>;
+        return (
+            <div className="cart-page-empty">
+                <div className="lux-loader"></div>
+                <h2>Sepetim yükleniyor...</h2>
+                <p>Ürünlerin ve ödeme özeti hazırlanıyor.</p>
+            </div>
+        );
     }
 
     if (!localStorage.getItem("kuba_username")) {
         return (
             <div className="cart-page-empty">
+                <span className="state-badge">KubaShop Hesabım</span>
                 <h2>Sepetim</h2>
                 <p>Sepetinizi görmek için lütfen giriş yapın.</p>
-                <button onClick={() => navigate('/login')} className="checkout-btn" style={{marginTop: '15px'}}>Giriş Yap</button>
+                <button onClick={() => navigate('/login')} className="checkout-btn">Giriş Yap</button>
+            </div>
+        );
+    }
+
+    if (error && (!cart || !cart.items)) {
+        return (
+            <div className="cart-page-empty error-state">
+                <span className="state-badge">Sepet Hatası</span>
+                <h2>{error}</h2>
+                <button onClick={fetchCart} className="checkout-btn">Tekrar Dene</button>
             </div>
         );
     }
@@ -78,15 +98,24 @@ const CartPage = () => {
     if (!cart || !cart.items || cart.items.length === 0) {
         return (
             <div className="cart-page-empty">
-                <h2>Sepetim</h2>
-                <p>Sepetinizde şu an ürün bulunmamaktadır. Hemen alışverişe başlayın!</p>
-                <button onClick={() => navigate('/')} className="checkout-btn" style={{marginTop: '15px'}}>Alışverişe Dön</button>
+                <span className="state-badge">Sepetim</span>
+                <h2>Sepetiniz boş</h2>
+                <p>Sepetinizde şu an ürün bulunmamaktadır. Hemen alışverişe başlayın.</p>
+                <button onClick={() => navigate('/')} className="checkout-btn">Alışverişe Dön</button>
             </div>
         );
     }
 
     return (
         <div className="cart-page-wrapper">
+            <div className="cart-hero">
+                <span>KubaShop Güvencesi</span>
+                <h1>Sepetim</h1>
+                <p>Seçtiğiniz ürünleri güvenli ödeme ile tamamlayın.</p>
+            </div>
+
+            {error && <div className="cart-inline-error">{error}</div>}
+
             <div className="cart-page-container">
                 <div className="cart-items-section">
                     <div className="cart-header-top">
@@ -108,7 +137,6 @@ const CartPage = () => {
                         {cart.items.map((item) => (
                             <div key={item.productId} className="cart-item-row">
                                 <div className="td-product">
-                                    {/* Backend'den imageUrl gelirse onu gösterir, gelmezse geçici resmi koyar */}
                                     <img
                                         src={item.imageUrl || item.image || "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=150&q=80"}
                                         alt={item.title}
@@ -116,12 +144,9 @@ const CartPage = () => {
                                     />
                                     <div className="product-info-col">
                                         <h3>{item.title}</h3>
-                                        {/* Backend'den renk gelirse onu basar */}
                                         <span className="product-color">Renk: {item.color || "Standart"}</span>
-
-                                        {/* Tıklandığında sadece bu ürünü silen fonksiyon çalışır */}
                                         <button className="remove-item-btn" onClick={() => handleRemoveItem(item.productId)}>
-                                            <i className="fas fa-trash"></i> Sil
+                                            Sil
                                         </button>
                                     </div>
                                 </div>
@@ -132,10 +157,8 @@ const CartPage = () => {
 
                                 <div className="td-quantity">
                                     <div className="quantity-controls">
-                                        {/* Eksi Butonu */}
                                         <button onClick={() => handleUpdateQuantity(item.productId, item.quantity, -1)}>-</button>
                                         <span>{item.quantity}</span>
-                                        {/* Artı Butonu */}
                                         <button onClick={() => handleUpdateQuantity(item.productId, item.quantity, 1)}>+</button>
                                     </div>
                                 </div>

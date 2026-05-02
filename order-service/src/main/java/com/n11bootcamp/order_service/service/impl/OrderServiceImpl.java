@@ -11,6 +11,8 @@ import com.n11bootcamp.order_service.repository.OrderRepository;
 import com.n11bootcamp.order_service.service.OrderService;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +21,8 @@ import java.util.List;
 
 @Service
 public class OrderServiceImpl implements OrderService {
+
+    private static final Logger log = LoggerFactory.getLogger(OrderServiceImpl.class); // Bu alan sayesinde log.info ve log.error kullanabiliyoruz.
 
     private final OrderRepository orderRepository;
     private final RabbitTemplate rabbitTemplate;
@@ -37,31 +41,38 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public OrderResponse createOrder(CreateOrderRequest request) {
-        if (request.getItems() == null || request.getItems().isEmpty()) {
-            throw new IllegalArgumentException("Order must contain at least one item");
+        log.info("Sipariş alınıyor..."); // Metot başladığında sipariş akışının başladığını loglara yazıyoruz.
+
+        try { // Sipariş oluştururken hata çıkabilecek işlemleri bu blok içinde topluyoruz.
+            if (request.getItems() == null || request.getItems().isEmpty()) { // Ürün listesi boş mu diye kontrol ediyoruz.
+                throw new IllegalArgumentException("Sipariş en az bir ürün içermelidir"); // İş kuralı hatası varsa anlaşılır mesaj fırlatıyoruz.
+            }
+
+            Order order = new Order(); // Veritabanına kaydedilecek yeni sipariş nesnesini oluşturuyoruz.
+            order.setUsername(request.getUsername()); // Siparişin hangi kullanıcıya ait olduğunu set ediyoruz.
+            order.setStatus(OrderStatus.CREATED); // Siparişi ilk olarak CREATED durumunda başlatıyoruz.
+
+            List<OrderItem> items = request.getItems().stream() // İstekten gelen ürün listesini sipariş ürünlerine çeviriyoruz.
+                    .map(itemRequest -> { // Her bir ürün isteğini OrderItem nesnesine dönüştürüyoruz.
+                        OrderItem item = new OrderItem(); // Sipariş içinde tutulacak ürün nesnesini oluşturuyoruz.
+                        item.setProductId(itemRequest.getProductId()); // Ürün id bilgisini sipariş ürününe koyuyoruz.
+                        item.setProductName(itemRequest.getProductName()); // Ürün adını sipariş ürününe koyuyoruz.
+                        item.setPrice(itemRequest.getPrice()); // Ürün fiyatını sipariş ürününe koyuyoruz.
+                        item.setQuantity(itemRequest.getQuantity()); // Ürün adetini sipariş ürününe koyuyoruz.
+                        return item; // Hazırlanan ürünü listeye geri veriyoruz.
+                    })
+                    .toList(); // Dönüşen ürünleri liste haline getiriyoruz.
+            order.setItems(items); // Hazırladığımız ürünleri siparişe bağlıyoruz.
+            order.setTotalPrice(calculateTotal(items)); // Siparişin toplam fiyatını hesaplayıp set ediyoruz.
+            order.setOrderDetails(toOrderDetails(request)); // Adres ve iletişim bilgilerini siparişe ekliyoruz.
+
+            Order savedOrder = orderRepository.save(order); // Siparişi veritabanına kaydediyoruz.
+            publishStockReserveRequest(savedOrder); // Stok rezervasyonu için RabbitMQ mesajı gönderiyoruz.
+            return toResponse(savedOrder); // Kaydedilen siparişi kullanıcıya cevap olarak dönüyoruz.
+        } catch (RuntimeException exception) { // Sipariş sırasında oluşan iş hatalarını yakalıyoruz.
+            log.error("Sipariş sırasında hata oluştu", exception); // Hatayı detaylarıyla loglara yazıyoruz.
+            throw exception; // GlobalExceptionHandler yakalasın diye hatayı tekrar fırlatıyoruz.
         }
-
-        Order order = new Order();
-        order.setUsername(request.getUsername());
-        order.setStatus(OrderStatus.CREATED);
-
-        List<OrderItem> items = request.getItems().stream()
-                .map(itemRequest -> {
-                    OrderItem item = new OrderItem();
-                    item.setProductId(itemRequest.getProductId());
-                    item.setProductName(itemRequest.getProductName());
-                    item.setPrice(itemRequest.getPrice());
-                    item.setQuantity(itemRequest.getQuantity());
-                    return item;
-                })
-                .toList();
-        order.setItems(items);
-        order.setTotalPrice(calculateTotal(items));
-        order.setOrderDetails(toOrderDetails(request));
-
-        Order savedOrder = orderRepository.save(order);
-        publishStockReserveRequest(savedOrder);
-        return toResponse(savedOrder);
     }
 
     @Override

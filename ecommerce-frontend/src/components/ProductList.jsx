@@ -10,22 +10,27 @@ function ProductList() {
     const [currentPage, setCurrentPage] = useState(0);
     const [totalPages, setTotalPages] = useState(1);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
         setLoading(true);
+        setError('');
         getProducts(currentPage, 8)
             .then(data => {
                 const result = data.content || (Array.isArray(data) ? data : []);
                 setProducts(result);
                 setTotalPages(data.totalPages || 1);
-                setLoading(false);
             })
             .catch(error => {
                 console.error("Veri çekme hatası:", error);
+                setError('Şu an ürünlere ulaşılamıyor, lütfen tekrar deneyin.');
+            })
+            .finally(() => {
                 setLoading(false);
             });
     }, [currentPage]);
+
     const Toast = Swal.mixin({
         toast: true,
         position: 'top-end',
@@ -33,6 +38,7 @@ function ProductList() {
         timer: 3000,
         timerProgressBar: true,
     });
+
     const handleAddToCart = async (e, productId, productTitle) => {
         if (e) e.preventDefault();
 
@@ -40,12 +46,11 @@ function ProductList() {
         const token = localStorage.getItem("kuba_token");
 
         if (!username || !token) {
-            // Giriş yap uyarısını da güzelleştirelim
             Swal.fire({
                 icon: 'warning',
                 title: 'Giriş Gerekli',
                 text: 'Sepete ürün eklemek için lütfen giriş yapın!',
-                confirmButtonColor: '#ff4d4d' // KubaShop kırmızısı
+                confirmButtonColor: '#e11d2e'
             }).then(() => {
                 navigate('/login');
             });
@@ -56,7 +61,7 @@ function ProductList() {
             await addToCart(username, productId, 1);
             Toast.fire({
                 icon: 'success',
-                title: `${productTitle} sepete eklendi! 🛒`
+                title: `${productTitle} sepete eklendi!`
             });
         } catch (error) {
             console.error("Sepete ekleme hatası:", error);
@@ -67,18 +72,52 @@ function ProductList() {
         }
     };
 
-    if (loading) return <div className="loading-text">KubaShop Yükleniyor... 🚀</div>;
+    if (loading) {
+        return (
+            <div className="lux-state">
+                <div className="lux-loader"></div>
+                <h2>KubaShop hazırlanıyor...</h2>
+                <p>Seçili ürünler senin için getiriliyor.</p>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="lux-state error-state">
+                <span className="state-badge">Bağlantı Hatası</span>
+                <h2>{error}</h2>
+                <button className="retry-btn" onClick={() => window.location.reload()}>
+                    Tekrar Dene
+                </button>
+            </div>
+        );
+    }
 
     return (
         <div className="home-container">
+            <section className="hero-slider">
+                <div className="hero-slide hero-slide-one"></div>
+                <div className="hero-slide hero-slide-two"></div>
+                <div className="hero-slide hero-slide-three"></div>
+                <div className="hero-overlay">
+                    <span className="hero-eyebrow">Premium Alışveriş Deneyimi</span>
+                    <h1>Kuba<span>Shop</span></h1>
+                    <p>Teknoloji, ev yaşamı ve seçili markalarda lüks alışveriş hissi.</p>
+                    <button className="hero-cta" onClick={() => window.scrollTo({ top: 420, behavior: 'smooth' })}>
+                        Ürünleri İncele
+                    </button>
+                </div>
+            </section>
+
             <div className="home-banner">
                 <h2>Eviniz İçin En İyisi</h2>
-                <p>KubaShop Güvencesiyle İncele ve Anında Satın Al</p>
+                <p>KubaShop güvencesiyle incele ve anında satın al</p>
             </div>
 
             <div className="product-grid">
                 {products.map((product) => {
-                    const stars = "⭐".repeat(Math.floor(Math.random() * 2) + 4);
+                    const stars = "★".repeat(Math.floor(Math.random() * 2) + 4);
 
                     return (
                         <Link to={`/product/${product.id}`} key={product.id} className="product-card-link">

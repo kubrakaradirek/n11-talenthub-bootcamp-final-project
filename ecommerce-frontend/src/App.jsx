@@ -4,7 +4,7 @@ import ProductList from './components/ProductList';
 import ProductDetail from './components/ProductDetail';
 import Login from './components/Login';
 import Register from './components/Register';
-import CartPage from './components/CartPage'; // YENİ EKLENDİ
+import CartPage from './components/CartPage';
 import './App.css';
 
 function App() {
@@ -40,22 +40,21 @@ function App() {
                         </Link>
 
                         <div className="navbar-account">
-                            <div className="account-icon">👤</div>
+                            <div className="account-icon">KS</div>
                             <div className="account-links">
                                 <span className="account-title">HESABIM</span>
                                 <div className="auth-links">
                                     {loggedInUser ? (
                                         <>
-                                            {/* SEPETİM LİNKİ BURAYA EKLENDİ */}
-                                            <Link to="/sepet" style={{color: '#2ecc71', fontWeight: 'bold', marginRight: '15px'}}>
-                                                🛒 Sepetim
+                                            <Link to="/sepet" className="cart-nav-link">
+                                                Sepetim
                                             </Link>
 
-                                            <span style={{color: '#ff4757', fontWeight: '800', textTransform: 'uppercase'}}>
+                                            <span className="welcome-user">
                                                 HOŞGELDİN, {loggedInUser}
                                             </span>
                                             <span className="divider">|</span>
-                                            <span onClick={handleLogout} style={{cursor: 'pointer', color: '#747d8c', fontWeight: '600'}}>
+                                            <span onClick={handleLogout} className="logout-link">
                                                 Çıkış Yap
                                             </span>
                                         </>
@@ -78,7 +77,6 @@ function App() {
                         <Route path="/product/:id" element={<ProductDetail />} />
                         <Route path="/login" element={<Login />} />
                         <Route path="/register" element={<Register />} />
-                        {/* SEPET ROTASI BURAYA EKLENDİ */}
                         <Route path="/sepet" element={<CartPage />} />
                     </Routes>
                 </div>
