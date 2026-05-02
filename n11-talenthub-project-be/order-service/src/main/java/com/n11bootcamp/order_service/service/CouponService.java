@@ -2,6 +2,7 @@ package com.n11bootcamp.order_service.service;
 
 import com.n11bootcamp.order_service.dto.CouponPreviewResponse;
 import com.n11bootcamp.order_service.entity.Coupon;
+import com.n11bootcamp.order_service.entity.Order;
 import com.n11bootcamp.order_service.repository.CouponRepository;
 import com.n11bootcamp.order_service.repository.OrderRepository;
 import org.slf4j.Logger;
@@ -85,7 +86,10 @@ public class CouponService {
             return List.of();
         }
 
-        List<Long> userIds = orderRepository.findDistinctUserIdsByUsernameIgnoreCase(username.trim());
+        List<Long> userIds = orderRepository.findByUsernameIgnoreCaseAndUserIdIsNotNull(username.trim()).stream()
+                .map(Order::getUserId)
+                .distinct()
+                .toList();
         if (userIds.isEmpty()) {
             return List.of();
         }
