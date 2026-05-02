@@ -11,3 +11,8 @@ export const getUnusedCoupons = async (userId) => {
     const response = await apiClient.get(`/api/orders/coupons/user/${userId}`);
     return response.data;
 };
+
+export const getUnusedCouponsByUsername = async (username) => {
+    const response = await apiClient.get(`/api/orders/coupons/username/${username}`);
+    return response.data;
+};

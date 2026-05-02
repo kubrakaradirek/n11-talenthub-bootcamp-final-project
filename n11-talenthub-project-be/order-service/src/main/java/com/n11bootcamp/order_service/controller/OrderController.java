@@ -89,4 +89,13 @@ public class OrderController {
     public List<Coupon> getUnusedCoupons(@Parameter(required = true) @PathVariable Long userId) {
         return couponService.findUnusedCoupons(userId);
     }
+
+    @GetMapping("/coupons/username/{username}")
+    @Operation(
+            summary = "List unused coupons by username",
+            description = "Lists active coupons for the current username. This keeps coupon display stable after login/session refresh."
+    )
+    public List<Coupon> getUnusedCouponsByUsername(@Parameter(required = true) @PathVariable String username) {
+        return couponService.findUnusedCouponsByUsername(username);
+    }
 }

@@ -3,14 +3,16 @@ package com.n11bootcamp.order_service.repository;
 import com.n11bootcamp.order_service.entity.Coupon;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.Optional;
 import java.util.List;
+import java.util.Optional;
 
 public interface CouponRepository extends JpaRepository<Coupon, Long> {
 
-    Optional<Coupon> findByCodeAndUserIdAndIsUsedFalse(String code, Long userId); // Kullanılmamış ve kullanıcıya ait kuponu buluyoruz.
+    Optional<Coupon> findByCodeAndUserIdAndIsUsedFalse(String code, Long userId);
 
-    List<Coupon> findByUserIdAndIsUsedFalse(Long userId); // Kullanıcının harcamadığı kuponları listeliyoruz.
+    List<Coupon> findByUserIdAndIsUsedFalse(Long userId);
 
-    boolean existsByUserId(Long userId); // Kullanıcıya daha önce kupon tanımlanmış mı kontrol ediyoruz.
+    List<Coupon> findByUserIdInAndIsUsedFalse(List<Long> userIds);
+
+    boolean existsByUserId(Long userId);
 }

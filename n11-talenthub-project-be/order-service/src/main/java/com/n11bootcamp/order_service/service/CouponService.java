@@ -3,6 +3,7 @@ package com.n11bootcamp.order_service.service;
 import com.n11bootcamp.order_service.dto.CouponPreviewResponse;
 import com.n11bootcamp.order_service.entity.Coupon;
 import com.n11bootcamp.order_service.repository.CouponRepository;
+import com.n11bootcamp.order_service.repository.OrderRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -18,9 +19,11 @@ public class CouponService {
     private static final double DISCOUNT_RATE = 0.20; // %20 indirim
 
     private final CouponRepository couponRepository;
+    private final OrderRepository orderRepository;
 
-    public CouponService(CouponRepository couponRepository) {
+    public CouponService(CouponRepository couponRepository, OrderRepository orderRepository) {
         this.couponRepository = couponRepository;
+        this.orderRepository = orderRepository;
     }
 
     public CouponPreviewResponse previewCoupon(Long userId, String couponCode, Double totalPrice) {
@@ -75,6 +78,19 @@ public class CouponService {
 
     public List<Coupon> findUnusedCoupons(Long userId) {
         return couponRepository.findByUserIdAndIsUsedFalse(userId);
+    }
+
+    public List<Coupon> findUnusedCouponsByUsername(String username) {
+        if (username == null || username.isBlank()) {
+            return List.of();
+        }
+
+        List<Long> userIds = orderRepository.findDistinctUserIdsByUsernameIgnoreCase(username.trim());
+        if (userIds.isEmpty()) {
+            return List.of();
+        }
+
+        return couponRepository.findByUserIdInAndIsUsedFalse(userIds);
     }
 
     private Coupon findValidCoupon(Long userId, String couponCode) {

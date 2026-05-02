@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import './CartPage.css';
 import PaymentCheckout from './PaymentCheckout';
 import { getCart, removeCartItem, updateCartQuantity } from '../services/cartService';
-import { getUnusedCoupons, previewCoupon } from '../services/couponService';
+import { getUnusedCoupons, getUnusedCouponsByUsername, previewCoupon } from '../services/couponService';
 
 const CartPage = () => {
     const [cart, setCart] = useState(null);
@@ -41,17 +41,32 @@ const CartPage = () => {
 
     const fetchActiveCoupons = async () => {
         const userId = getCurrentUserId();
-        if (!userId) {
+        const username = localStorage.getItem("kuba_username");
+
+        if (!userId && !username) {
             setActiveCoupons([]);
             return;
         }
 
         try {
-            const coupons = await getUnusedCoupons(userId);
+            const coupons = username
+                ? await getUnusedCouponsByUsername(username)
+                : await getUnusedCoupons(userId);
             setActiveCoupons(Array.isArray(coupons) ? coupons : []);
         } catch (error) {
             console.error("Aktif kuponlar yüklenemedi:", error);
-            setActiveCoupons([]);
+            if (!userId) {
+                setActiveCoupons([]);
+                return;
+            }
+
+            try {
+                const coupons = await getUnusedCoupons(userId);
+                setActiveCoupons(Array.isArray(coupons) ? coupons : []);
+            } catch (fallbackError) {
+                console.error("Aktif kuponlar userId ile de yüklenemedi:", fallbackError);
+                setActiveCoupons([]);
+            }
         }
     };
 

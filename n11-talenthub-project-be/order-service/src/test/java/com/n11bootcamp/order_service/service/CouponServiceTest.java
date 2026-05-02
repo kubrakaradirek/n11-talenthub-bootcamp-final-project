@@ -3,6 +3,7 @@ package com.n11bootcamp.order_service.service;
 import com.n11bootcamp.order_service.dto.CouponPreviewResponse;
 import com.n11bootcamp.order_service.entity.Coupon;
 import com.n11bootcamp.order_service.repository.CouponRepository;
+import com.n11bootcamp.order_service.repository.OrderRepository;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -18,7 +19,8 @@ import static org.mockito.Mockito.when;
 class CouponServiceTest {
 
     private final CouponRepository couponRepository = mock(CouponRepository.class);
-    private final CouponService couponService = new CouponService(couponRepository);
+    private final OrderRepository orderRepository = mock(OrderRepository.class);
+    private final CouponService couponService = new CouponService(couponRepository, orderRepository);
 
     @Test
     void previewCoupon_shouldCalculateTwentyPercentDiscount_whenCouponIsValid() {
