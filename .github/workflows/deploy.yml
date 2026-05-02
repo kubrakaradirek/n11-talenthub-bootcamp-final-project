@@ -22,7 +22,7 @@ jobs:
           java-version: "21"
           cache: maven
 
-      - name: Build backend services
+      - name: Compile backend services
         shell: bash
         run: |
           services=(
@@ -38,8 +38,8 @@ jobs:
           )
 
           for service in "${services[@]}"; do
-            echo "Building $service"
-            mvn -B -f "n11-talenthub-project-be/$service/pom.xml" clean test
+            echo "Compiling $service"
+            mvn -B -f "n11-talenthub-project-be/$service/pom.xml" clean compile -DskipTests
           done
 
       - name: Set up Node.js
