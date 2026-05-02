@@ -17,12 +17,21 @@ const CartPage = () => {
 
     const getCurrentUserId = () => {
         const storedUserId = localStorage.getItem("kuba_user_id");
-        if (storedUserId) {
+        if (storedUserId && storedUserId !== "undefined" && storedUserId !== "null") {
             return Number(storedUserId);
         }
 
         const storedUser = localStorage.getItem("kuba_user");
-        return storedUser ? Number(JSON.parse(storedUser).id) : null;
+        if (!storedUser) {
+            return null;
+        }
+
+        try {
+            const user = JSON.parse(storedUser);
+            return user?.id ? Number(user.id) : null;
+        } catch {
+            return null;
+        }
     };
 
     useEffect(() => {
@@ -44,6 +53,30 @@ const CartPage = () => {
             console.error("Aktif kuponlar yüklenemedi:", error);
             setActiveCoupons([]);
         }
+    };
+
+    const renderActiveCoupons = () => (
+        activeCoupons.length > 0 && (
+            <div className="active-coupons-inline">
+                <span className="active-coupons-title">Aktif Kuponlar</span>
+                {activeCoupons.map((coupon) => (
+                    <div className="active-coupon-row" key={coupon.id}>
+                        <div>
+                            <strong>{coupon.code}</strong>
+                            <small>%20 indirim kuponu</small>
+                        </div>
+                        <button type="button" onClick={() => setCouponCode(coupon.code)}>
+                            Kodu Kullan
+                        </button>
+                    </div>
+                ))}
+            </div>
+        )
+    );
+
+    const handlePaymentSuccess = async () => {
+        await fetchCart();
+        await fetchActiveCoupons();
     };
 
     const fetchCart = async () => {
@@ -172,6 +205,7 @@ const CartPage = () => {
                 <span className="state-badge">Sepetim</span>
                 <h2>Sepetiniz boş</h2>
                 <p>Sepetinizde şu an ürün bulunmamaktadır. Hemen alışverişe başlayın.</p>
+                {renderActiveCoupons()}
                 <button onClick={() => navigate('/')} className="checkout-btn">Alışverişe Dön</button>
             </div>
         );
@@ -284,29 +318,14 @@ const CartPage = () => {
                                 {couponMessage}
                             </div>
                         )}
-                        {activeCoupons.length > 0 && (
-                            <div className="active-coupons-inline">
-                                <span className="active-coupons-title">Aktif Kuponlar</span>
-                                {activeCoupons.map((coupon) => (
-                                    <div className="active-coupon-row" key={coupon.id}>
-                                        <div>
-                                            <strong>{coupon.code}</strong>
-                                            <small>%20 indirim kuponu</small>
-                                        </div>
-                                        <button type="button" onClick={() => setCouponCode(coupon.code)}>
-                                            Kodu Kullan
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+                        {renderActiveCoupons()}
                     </div>
                     <PaymentCheckout
                         cart={cart}
                         username={localStorage.getItem("kuba_username")}
                         userId={getCurrentUserId()}
                         couponCode={appliedCoupon ? couponCode : ''}
-                        onPaymentSuccess={fetchCart}
+                        onPaymentSuccess={handlePaymentSuccess}
                     />
 
                     <div className="payment-methods-container">
