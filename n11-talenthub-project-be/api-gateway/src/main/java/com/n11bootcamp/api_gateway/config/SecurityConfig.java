@@ -21,7 +21,7 @@ public class SecurityConfig {
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration corsConfig = new CorsConfiguration();
         // React dev ortamı
-        corsConfig.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+        corsConfig.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://92.249.61.16"));
         corsConfig.setMaxAge(3600L);
         corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         corsConfig.setAllowedHeaders(Arrays.asList("*"));

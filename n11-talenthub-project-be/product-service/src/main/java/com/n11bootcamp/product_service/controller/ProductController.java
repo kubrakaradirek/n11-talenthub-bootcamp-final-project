@@ -1,6 +1,7 @@
 package com.n11bootcamp.product_service.controller;
 
 import com.n11bootcamp.product_service.entity.Product;
+import com.n11bootcamp.product_service.exception.ErrorResponse;
 import com.n11bootcamp.product_service.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -22,10 +23,22 @@ public class ProductController {
 
     @GetMapping
     @Operation(summary = "List products")
-    public ResponseEntity<Page<Product>> getAllProducts(
+    public ResponseEntity<?> getAllProducts(
             @Parameter(required = false) @RequestParam(defaultValue = "0") int page,
             @Parameter(required = false) @RequestParam(defaultValue = "8") int size) {
-        return ResponseEntity.ok(productService.getPagedProducts(page, size));
+        Page<Product> products = productService.getPagedProducts(page, size);
+
+        if (page > 0 && products.getTotalPages() == 0) {
+            return ResponseEntity.badRequest()
+                    .body(new ErrorResponse(400, "Bu page mevcut degil."));
+        }
+
+        if (page >= products.getTotalPages() && products.getTotalElements() > 0) {
+            return ResponseEntity.badRequest()
+                    .body(new ErrorResponse(400, "Bu page mevcut degil."));
+        }
+
+        return ResponseEntity.ok(products);
     }
 
     @GetMapping("/{id}")

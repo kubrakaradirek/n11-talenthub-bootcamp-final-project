@@ -1,6 +1,8 @@
 package com.n11bootcamp.product_service.service;
 
 import com.n11bootcamp.product_service.entity.Product;
+import com.n11bootcamp.product_service.exception.InvalidProductPageException;
+import com.n11bootcamp.product_service.exception.ProductNotFoundException;
 import com.n11bootcamp.product_service.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +24,7 @@ public class ProductService {
         return productRepository.findById(id)
                 .orElseThrow(() -> {
                     log.error("Urun bulunamadi. Aranan ID: {}", id);
-                    return new RuntimeException("Urun bulunamadi.");
+                    return new ProductNotFoundException("Boyle bir urun yok.");
                 });
     }
 
@@ -31,6 +33,10 @@ public class ProductService {
     }
 
     public Page<Product> getPagedProducts(int page, int size) {
+        if (page < 0 || size < 1) {
+            throw new InvalidProductPageException("Gecersiz page veya size degeri.");
+        }
+
         log.info("Urun listesi sayfalama ile cekiliyor. Sayfa: {}, Boyut: {}", page, size);
         return productRepository.findAll(
                 PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"))
