@@ -13,6 +13,7 @@ const CartPage = () => {
     const [appliedCoupon, setAppliedCoupon] = useState(null);
     const [couponMessage, setCouponMessage] = useState('');
     const [activeCoupons, setActiveCoupons] = useState([]);
+    const [couponsLoading, setCouponsLoading] = useState(false);
     const navigate = useNavigate();
 
     const getCurrentUserId = () => {
@@ -39,6 +40,12 @@ const CartPage = () => {
         fetchActiveCoupons();
     }, []);
 
+    useEffect(() => {
+        if (!couponCode && activeCoupons.length > 0) {
+            setCouponCode(activeCoupons[0].code);
+        }
+    }, [activeCoupons, couponCode]);
+
     const fetchActiveCoupons = async () => {
         const userId = getCurrentUserId();
         const username = localStorage.getItem("kuba_username");
@@ -47,6 +54,8 @@ const CartPage = () => {
             setActiveCoupons([]);
             return;
         }
+
+        setCouponsLoading(true);
 
         try {
             const couponResults = await Promise.allSettled([
@@ -73,15 +82,27 @@ const CartPage = () => {
                 console.error("Aktif kuponlar userId ile de yüklenemedi:", fallbackError);
                 setActiveCoupons([]);
             }
+        } finally {
+            setCouponsLoading(false);
         }
     };
 
     const renderActiveCoupons = () => (
-        activeCoupons.length > 0 && (
-            <div className="active-coupons-inline">
-                <span className="active-coupons-title">Aktif Kuponlar</span>
-                {activeCoupons.map((coupon) => (
-                    <div className="active-coupon-row" key={coupon.id}>
+        <div className="active-coupons-inline">
+            <span className="active-coupons-title">Kuponlarım</span>
+            {couponsLoading ? (
+                <div className="active-coupon-row">
+                    <div>
+                        <strong>Kuponlar kontrol ediliyor...</strong>
+                        <small>Birazdan otomatik görünecek.</small>
+                    </div>
+                    <button type="button" onClick={fetchActiveCoupons}>
+                        Yenile
+                    </button>
+                </div>
+            ) : activeCoupons.length > 0 ? (
+                activeCoupons.map((coupon) => (
+                    <div className="active-coupon-row" key={coupon.id || coupon.code}>
                         <div>
                             <strong>{coupon.code}</strong>
                             <small>%20 indirim kuponu</small>
@@ -90,9 +111,19 @@ const CartPage = () => {
                             Kodu Kullan
                         </button>
                     </div>
-                ))}
-            </div>
-        )
+                ))
+            ) : (
+                <div className="active-coupon-row">
+                    <div>
+                        <strong>Aktif kupon bulunamadı.</strong>
+                        <small>Yeni siparişten sonra kupon oluşursa burada görünecek.</small>
+                    </div>
+                    <button type="button" onClick={fetchActiveCoupons}>
+                        Yenile
+                    </button>
+                </div>
+            )}
+        </div>
     );
 
     const handlePaymentSuccess = async () => {
