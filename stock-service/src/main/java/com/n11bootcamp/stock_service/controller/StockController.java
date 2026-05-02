@@ -4,6 +4,7 @@ package com.n11bootcamp.stock_service.controller;
 import com.n11bootcamp.stock_service.dto.StockUpdateRequest;
 import com.n11bootcamp.stock_service.dto.StockUpdateResponse;
 import com.n11bootcamp.stock_service.service.StockDomainService;
+import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,12 +19,14 @@ public class StockController {
     }
 
     // Eski çalışan yapı: direkt availableQuantity düşürür
+    @Hidden
     @PostMapping("/decrease")
     public ResponseEntity<StockUpdateResponse> decrease(@RequestBody StockUpdateRequest req) {
         return ResponseEntity.ok(stock.decrease(req));
     }
 
     // Eski çalışan yapı: direkt availableQuantity artırır
+    @Hidden
     @PostMapping("/increase")
     public ResponseEntity<StockUpdateResponse> increase(@RequestBody StockUpdateRequest req) {
         return ResponseEntity.ok(stock.increase(req));
@@ -47,3 +50,4 @@ public class StockController {
         return ResponseEntity.ok(stock.commit(req));
     }
 }
+

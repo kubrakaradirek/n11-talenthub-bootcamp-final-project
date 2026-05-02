@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import './CartPage.css';
+import PaymentCheckout from './PaymentCheckout';
+import { getCart, removeCartItem, updateCartQuantity } from '../services/cartService';
 
 const CartPage = () => {
     const [cart, setCart] = useState(null);
@@ -22,10 +23,8 @@ const CartPage = () => {
         }
 
         try {
-            const res = await axios.get(`http://localhost:8763/api/shopping-cart/${username}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            setCart(res.data);
+            const data = await getCart(username);
+            setCart(data);
         } catch (error) {
             console.error("Sepet yüklenemedi:", error);
         } finally {
@@ -36,17 +35,13 @@ const CartPage = () => {
     // --- 1. MİKTAR GÜNCELLEME METODU (+ / -) ---
     const handleUpdateQuantity = async (productId, currentQuantity, change) => {
         const username = localStorage.getItem("kuba_username");
-        const token = localStorage.getItem("kuba_token");
         const newQuantity = currentQuantity + change;
 
         // Adet 1'in altına düşemez
         if (newQuantity < 1) return;
 
         try {
-            // Backend'deki update endpoint'ine istek atıyoruz
-            await axios.post(`http://localhost:8763/api/shopping-cart/${username}/update?productId=${productId}&quantity=${newQuantity}`, {}, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await updateCartQuantity(username, productId, newQuantity);
             // İstek başarılı olunca sepeti yeniden çek ki sağdaki "Toplam Fiyat" değişsin
             fetchCart();
         } catch (error) {
@@ -57,14 +52,9 @@ const CartPage = () => {
     // --- 2. TEKİL ÜRÜN SİLME METODU (Çöp Kutusu) ---
     const handleRemoveItem = async (productId) => {
         const username = localStorage.getItem("kuba_username");
-        const token = localStorage.getItem("kuba_token");
 
         try {
-            // Ürünü silmek için backend endpoint'ini çağırıyoruz (/remove olduğunu varsayıyorum)
-            // Eğer backend'de özel bir remove metodu yoksa, quantity=0 update metodu da kullanılabilir.
-            await axios.delete(`http://localhost:8763/api/shopping-cart/${username}/remove?productId=${productId}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await removeCartItem(username, productId);
             fetchCart(); // Sildikten sonra sepeti güncelle
         } catch (error) {
             console.error("Ürün silinirken hata:", error);
@@ -177,7 +167,11 @@ const CartPage = () => {
                         <span>Toplam <small>KDV Dahil</small></span>
                         <span className="total-price">{cart.totalPrice.toLocaleString('tr-TR')} TL</span>
                     </div>
-                    <button className="checkout-btn">Siparişi Tamamla &gt;</button>
+                    <PaymentCheckout
+                        cart={cart}
+                        username={localStorage.getItem("kuba_username")}
+                        onPaymentSuccess={fetchCart}
+                    />
 
                     <div className="payment-methods-container">
                         <p>Ödeme Yöntemleri</p>

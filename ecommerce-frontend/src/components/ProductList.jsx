@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './ProductList.css';
 import Swal from 'sweetalert2';
+import { addToCart } from '../services/cartService';
+import { getProducts } from '../services/productService';
 
 function ProductList() {
     const [products, setProducts] = useState([]);
@@ -12,8 +14,7 @@ function ProductList() {
 
     useEffect(() => {
         setLoading(true);
-        fetch(`http://localhost:8763/api/products?page=${currentPage}&size=8`)
-            .then(response => response.json())
+        getProducts(currentPage, 8)
             .then(data => {
                 const result = data.content || (Array.isArray(data) ? data : []);
                 setProducts(result);
@@ -52,25 +53,11 @@ function ProductList() {
         }
 
         try {
-            const response = await fetch(`http://localhost:8763/api/shopping-cart/${username}/add?productId=${productId}&quantity=1`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
+            await addToCart(username, productId, 1);
+            Toast.fire({
+                icon: 'success',
+                title: `${productTitle} sepete eklendi! 🛒`
             });
-
-            if (response.ok) {
-                // İŞTE BURASI: Ürün adıyla birlikte başarılı mesajı!
-                Toast.fire({
-                    icon: 'success',
-                    title: `${productTitle} sepete eklendi! 🛒`
-                });
-            } else {
-                Toast.fire({
-                    icon: 'error',
-                    title: 'Ürün eklenirken bir hata oluştu.'
-                });
-            }
         } catch (error) {
             console.error("Sepete ekleme hatası:", error);
             Toast.fire({

@@ -81,6 +81,11 @@
 			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>2.8.16</version>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
@@ -126,25 +131,16 @@
 					</excludes>
 				</configuration>
 			</plugin>
-			<!-- Jib ile Dockerfile olmadan Image Oluşturma -->
 			<plugin>
 				<groupId>com.google.cloud.tools</groupId>
 				<artifactId>jib-maven-plugin</artifactId>
 				<version>3.4.0</version>
 				<configuration>
+					<from>
+						<image>eclipse-temurin:21-jre-alpine</image>
+					</from>
 					<to>
-						<image>kubashop/shopping-cart-service</image>
-					</to>
-				</configuration>
-			</plugin>
-
-			<plugin>
-				<groupId>com.google.cloud.tools</groupId>
-				<artifactId>jib-maven-plugin</artifactId>
-				<version>3.4.0</version>
-				<configuration>
-					<to>
-						<image>kubashop/shopping-cart-service</image>
+						<image>${project.artifactId}:latest</image>
 					</to>
 				</configuration>
 			</plugin>

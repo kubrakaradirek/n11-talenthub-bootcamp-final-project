@@ -2,23 +2,28 @@ package com.n11bootcamp.user_service.request;
 
 import java.util.Set;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 
 public class SignupRequest {
 
     @NotBlank(message = "Invalid Username: Empty username")
     @Size(min = 3, max = 30, message = "Invalid username: Must be of 3 - 30 characters")
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "ayse02")
     private String username;
 
     @NotBlank(message = "Invalid Email: Empty email")
     @Size(max = 50, message = "Invalid email: Must be max 50 characters")
     @Email(message = "Invalid email")
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "ayse@gmail.com")
     private String email;
 
+    @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED, example = "[\"Customer\"]")
     private Set<String> role;
 
     @NotBlank(message = "Invalid Password: Empty password")
     @Size(min=6, max = 40, message = "Invalid password: Must be of 6 - 40 characters")
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "123456")
     private String password;
 
 

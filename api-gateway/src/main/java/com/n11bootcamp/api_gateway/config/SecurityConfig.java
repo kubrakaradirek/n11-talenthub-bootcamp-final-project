@@ -6,8 +6,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
-import org.springframework.security.oauth2.jwt.ReactiveJwtDecoders;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsWebFilter;
@@ -34,22 +32,22 @@ public class SecurityConfig {
 
         return new CorsWebFilter(source);
     }
-    @Bean
-    public ReactiveJwtDecoder jwtDecoder() {
-        return ReactiveJwtDecoders.fromIssuerLocation("http://localhost:8081/realms/microservice-realm");
-    }
     // GÜVENLİK FİLTRESİ: Gateway üzerinden geçen trafiği yönetir
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable) // API'ler için CSRF'i kapandı
                 .authorizeExchange(exchanges -> exchanges
+                        .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // Kurallar sırasıyla
                         .pathMatchers("/eureka/**").permitAll() // Eureka paneli açık
+                        .pathMatchers("/swagger-ui.html", "/swagger-ui/**", "/webjars/**", "/v3/api-docs/**").permitAll()
                         .pathMatchers("/api/user/signup", "/api/user/signin").permitAll() // Kayıt ve Giriş açık
+                        .pathMatchers(HttpMethod.GET, "/api/products").permitAll()
                         .pathMatchers(HttpMethod.GET, "/api/products/**").permitAll() // Ürün listeleme HERKESE açık
                         .pathMatchers(HttpMethod.GET, "/api/stock/**").permitAll()
                         .pathMatchers("/api/shopping-cart/**").permitAll()
+                        .pathMatchers("/api/payments/**", "/api/payments").authenticated()
                         .anyExchange().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));

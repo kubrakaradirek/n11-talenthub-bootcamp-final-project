@@ -22,11 +22,17 @@ public class KeycloakService {
     @Value("${jwt.client_secret}")
     private String clientSecret;
 
+    @Value("${jwt.auth_server_url}")
+    private String authServerUrl;
+
+    @Value("${jwt.realm}")
+    private String realm;
+
     // Keycloak'a bağlanmak için anahtar
     private Keycloak getKeycloak() {
         return KeycloakBuilder.builder()
-                .serverUrl("http://localhost:8081")
-                .realm("microservice-realm")
+                .serverUrl(authServerUrl)
+                .realm(realm)
                 .grantType("client_credentials")
                 .clientId(clientId)
                 .clientSecret(clientSecret)
@@ -44,7 +50,7 @@ public class KeycloakService {
         user.setEmailVerified(true);
 
         // Kullanıcıyı Keycloak'a kaydet
-        Response response = keycloak.realm("microservice-realm").users().create(user);
+        Response response = keycloak.realm(realm).users().create(user);
 
         if (response.getStatus() == 201) {
             // Başarıyla oluştuysa ID'sini al
@@ -56,11 +62,11 @@ public class KeycloakService {
             passwordCred.setType(CredentialRepresentation.PASSWORD);
             passwordCred.setValue(request.getPassword());
 
-            keycloak.realm("microservice-realm").users().get(userId).resetPassword(passwordCred);
+            keycloak.realm(realm).users().get(userId).resetPassword(passwordCred);
 
             // "Customer" rolünü bul ve kullanıcıya ata
-            RoleRepresentation customerRole = keycloak.realm("microservice-realm").roles().get("Customer").toRepresentation();
-            keycloak.realm("microservice-realm").users().get(userId).roles().realmLevel().add(Collections.singletonList(customerRole));
+            RoleRepresentation customerRole = keycloak.realm(realm).roles().get("Customer").toRepresentation();
+            keycloak.realm(realm).users().get(userId).roles().realmLevel().add(Collections.singletonList(customerRole));
 
         } else {
             // Eğer aynı isimde biri varsa veya başka hata olursa işlemi durdur

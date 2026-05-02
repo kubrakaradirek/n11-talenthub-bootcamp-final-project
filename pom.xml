@@ -25,6 +25,12 @@
         <module>config-server</module>
         <module>discovery-server</module>
         <module>api-gateway</module>
+        <module>order-service</module>
+        <module>payment-service</module>
+        <module>product-service</module>
+        <module>shopping-card-service</module>
+        <module>stock-service</module>
+        <module>user-service</module>
     </modules>
 
     <dependencyManagement>
@@ -38,4 +44,17 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <version>3.4.0</version>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

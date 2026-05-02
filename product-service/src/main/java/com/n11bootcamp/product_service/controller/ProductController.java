@@ -1,14 +1,22 @@
 package com.n11bootcamp.product_service.controller;
 
-
 import com.n11bootcamp.product_service.entity.Product;
 import com.n11bootcamp.product_service.service.ProductService;
+import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/products")
@@ -18,33 +26,43 @@ public class ProductController {
     private final ProductService productService;
 
     @PostMapping
-    public ResponseEntity<Product> createProduct(@RequestBody Product product) {
+    @Hidden
+    @Operation(summary = "Create product")
+    public ResponseEntity<Product> createProduct(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(required = true)
+            @RequestBody Product product) {
         return ResponseEntity.ok(productService.createProduct(product));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product product) {
+    @Hidden
+    @Operation(summary = "Update product")
+    public ResponseEntity<Product> updateProduct(
+            @Parameter(required = true) @PathVariable Long id,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(required = true)
+            @RequestBody Product product) {
         return ResponseEntity.ok(productService.updateProduct(id, product));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteProduct(@PathVariable Long id) {
+    @Hidden
+    @Operation(summary = "Delete product")
+    public ResponseEntity<String> deleteProduct(@Parameter(required = true) @PathVariable Long id) {
         productService.deleteProduct(id);
-        return ResponseEntity.ok("Ürün başarıyla silindi.");
+        return ResponseEntity.ok("Product deleted successfully.");
     }
 
     @GetMapping
+    @Operation(summary = "List products")
     public ResponseEntity<Page<Product>> getAllProducts(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "8") int size) {
-
-
+            @Parameter(required = false) @RequestParam(defaultValue = "0") int page,
+            @Parameter(required = false) @RequestParam(defaultValue = "8") int size) {
         return ResponseEntity.ok(productService.getPagedProducts(page, size));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable Long id) {
+    @Operation(summary = "Get product by id")
+    public ResponseEntity<Product> getProductById(@Parameter(required = true) @PathVariable Long id) {
         return ResponseEntity.ok(productService.getProductById(id));
     }
-
 }

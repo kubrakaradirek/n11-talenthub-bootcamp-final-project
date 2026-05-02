@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Auth.css';
+import apiClient from '../services/apiClient';
 
 function Register() {
     const [username, setUsername] = useState('');
@@ -16,32 +17,25 @@ function Register() {
         setMessage({ text: 'Kayıt yapılıyor, lütfen bekleyin...', type: 'loading' });
 
         try {
-            const response = await fetch('http://localhost:8763/api/user/signup', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    username: username,
-                    email: email,
-                    password: password
-                })
-            });
+            const response = await apiClient.post('/api/user/signup', { username, email, password });
 
-            if (response.ok) {
+            if (response.status >= 200 && response.status < 300) {
                 setMessage({ text: "Kayıt Başarılı! Giriş sayfasına yönlendiriliyorsunuz... 🚀", type: "success" });
 
                 setTimeout(() => {
                     navigate('/login');
                 }, 2000);
-
-            } else {
-                const errorData = await response.json();
-                setMessage({ text: errorData.message || "Kayıt olurken bir hata oluştu.", type: "error" });
             }
         } catch (error) {
             console.error("Bağlantı hatası:", error);
-            setMessage({ text: "Sunucuya bağlanılamadı. API Gateway (8763) açık mı?", type: "error" });
+            const backendMessage =
+                error.response?.data?.message ||
+                error.response?.data?.error ||
+                (typeof error.response?.data === 'string' ? error.response.data : '');
+            setMessage({
+                text: backendMessage || "Sunucuya baglanilamadi. API Gateway (8763) acik mi?",
+                type: "error"
+            });
         }
     };
 

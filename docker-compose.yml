@@ -1,43 +1,216 @@
-version: '3.8'
-
 services:
-  postgres:
-    image: postgres:15
-    container_name: n11-postgres
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 123
-      POSTGRES_DB: n11_bootcamp_db
-    ports:
-      - "5434:5432"
-    restart: always
-
   rabbitmq:
-    image: rabbitmq:3-management
+    image: rabbitmq:management
     container_name: n11-rabbitmq
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
     ports:
-      - "5674:5672"   # Mikroservislerin RabbitMQ ile haberleşeceği port
-      - "15674:15672" # Tarayıcıdan RabbitMQ paneline erişim portu
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - n11-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+
+  redis:
+    image: redis:latest
+    container_name: n11-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - n11-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     restart: always
 
   keycloak:
     image: quay.io/keycloak/keycloak:25.0.5
     container_name: n11-keycloak
     environment:
-      - KEYCLOAK_ADMIN=admin
-      - KEYCLOAK_ADMIN_PASSWORD=admin
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
     command: start-dev
     ports:
-      - "8081:8080" # API Gateway 8080'de çalıştığı için Keycloak'u 8081
+      - "8081:8080"
+    networks:
+      - n11-network
     restart: always
 
-  # --- Redis Servisi ---
-  redis:
-    image: redis:latest
-    container_name: n11-redis
+  discovery-server:
+    image: discovery-server:latest
+    container_name: n11-discovery-server
     ports:
-      - "6379:6379"
+      - "8761:8761"
+    environment:
+      CONFIG_ENABLED: "false"
+      EUREKA_HOSTNAME: discovery-server
+    networks:
+      - n11-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8761/eureka/apps || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
     restart: always
+
+  config-server:
+    image: config-server:latest
+    container_name: n11-config-server
+    ports:
+      - "8888:8888"
+    environment:
+      EUREKA_URI: http://discovery-server:8761/eureka/
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+    networks:
+      - n11-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8888/api-gateway/default || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: always
+
+  api-gateway:
+    image: api-gateway:latest
+    container_name: n11-api-gateway
+    ports:
+      - "8763:8763"
+    environment:
+      CONFIG_URI: http://config-server:8888
+      EUREKA_URI: http://discovery-server:8761/eureka/
+    depends_on:
+      keycloak:
+        condition: service_started
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+    networks:
+      - n11-network
+    restart: always
+
+  user-service:
+    image: user-service:latest
+    container_name: n11-user-service
+    ports:
+      - "8766:8766"
+    environment:
+      CONFIG_URI: http://config-server:8888
+      EUREKA_URI: http://discovery-server:8761/eureka/
+    depends_on:
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+    networks:
+      - n11-network
+    restart: always
+
+  product-service:
+    image: product-service:latest
+    container_name: n11-product-service
+    ports:
+      - "8764:8764"
+    environment:
+      CONFIG_URI: http://config-server:8888
+      EUREKA_URI: http://discovery-server:8761/eureka/
+    depends_on:
+      config-server:
+        condition: service_started
+      discovery-server:
+        condition: service_started
+    networks:
+      - n11-network
+    restart: always
+
+  shopping-card-service:
+    image: shopping-card-service:latest
+    container_name: n11-shopping-card-service
+    ports:
+      - "8765:8765"
+    environment:
+      CONFIG_URI: http://config-server:8888
+      EUREKA_URI: http://discovery-server:8761/eureka/
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      config-server:
+        condition: service_started
+      discovery-server:
+        condition: service_started
+    networks:
+      - n11-network
+    restart: always
+
+  stock-service:
+    image: stock-service:latest
+    container_name: n11-stock-service
+    ports:
+      - "8769:8769"
+    environment:
+      CONFIG_URI: http://config-server:8888
+      EUREKA_URI: http://discovery-server:8761/eureka/
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+    networks:
+      - n11-network
+    restart: always
+
+  order-service:
+    image: order-service:latest
+    container_name: n11-order-service
+    ports:
+      - "8770:8770"
+    environment:
+      CONFIG_URI: http://config-server:8888
+      EUREKA_URI: http://discovery-server:8761/eureka/
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+    networks:
+      - n11-network
+    restart: always
+
+  payment-service:
+    image: payment-service:latest
+    container_name: n11-payment-service
+    ports:
+      - "8771:8771"
+    environment:
+      CONFIG_URI: http://config-server:8888
+      EUREKA_URI: http://discovery-server:8761/eureka/
+    depends_on:
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      order-service:
+        condition: service_started
+    networks:
+      - n11-network
+    restart: always
+
+networks:
+  n11-network:
+    driver: bridge

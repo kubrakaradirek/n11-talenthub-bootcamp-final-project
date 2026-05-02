@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom'; // Sadece Link kalmalı, sayfanın görünmesi için şart!
 import './Auth.css';
+import apiClient from '../services/apiClient';
 
 function Login() {
     const [username, setUsername] = useState('');
@@ -13,16 +14,10 @@ function Login() {
         setMessage({ text: 'Giriş yapılıyor, lütfen bekleyin...', type: 'loading' });
 
         try {
-            const response = await fetch('http://localhost:8763/api/user/signin', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ username: username, password: password })
-            });
+            const response = await apiClient.post('/api/user/signin', { username, password });
 
-            if (response.ok) {
-                const data = await response.json();
+            if (response.status >= 200 && response.status < 300) {
+                const data = response.data;
 
                 // Başarılı girişte bilgileri localStorage'a kaydet
                 localStorage.setItem("kuba_token", data.accessToken);
@@ -34,13 +29,10 @@ function Login() {
                 setTimeout(() => {
                     window.location.href = "/";
                 }, 1500);
-
-            } else {
-                setMessage({ text: "Hatalı Kullanıcı Adı veya Şifre! Lütfen tekrar dene.", type: "error" });
             }
         } catch (error) {
             console.error("Bağlantı hatası:", error);
-            setMessage({ text: "Sunucuya bağlanılamadı. API Gateway (8763) açık mı?", type: "error" });
+            setMessage({ text: error.response ? "Hatalı Kullanıcı Adı veya Şifre! Lütfen tekrar dene." : "Sunucuya bağlanılamadı. API Gateway (8763) açık mı?", type: "error" });
         }
     };
 

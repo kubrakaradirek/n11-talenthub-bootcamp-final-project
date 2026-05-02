@@ -43,4 +43,10 @@ public class ShoppingCardController {
             @RequestParam Long productId) {
         return ResponseEntity.ok(cartService.removeItem(username, productId));
     }
+
+    @DeleteMapping("/{username}/clear")
+    public ResponseEntity<Void> clearCart(@PathVariable String username) {
+        cartService.clearCart(username);
+        return ResponseEntity.noContent().build();
+    }
 }

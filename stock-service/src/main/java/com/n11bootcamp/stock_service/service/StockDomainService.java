@@ -146,15 +146,20 @@ public class StockDomainService {
                 ProductStock ps = repo.findById(it.getProductId())
                         .orElseThrow(() -> new IllegalArgumentException("Product not found: " + it.getProductId()));
 
-                if (ps.getReservedQuantity() < it.getQuantity()) {
-                    throw new IllegalStateException("Insufficient reserved stock for productId=" + it.getProductId());
+                if (ps.getReservedQuantity() < it.getQuantity()
+                        && ps.getAvailableQuantity() < it.getQuantity()) {
+                    throw new IllegalStateException("Insufficient stock for productId=" + it.getProductId());
                 }
             }
 
             // sonra commit et
             for (StockUpdateRequest.StockItem it : req.getItems()) {
                 ProductStock ps = repo.findById(it.getProductId()).orElseThrow();
-                ps.commit(it.getQuantity());
+                if (ps.getReservedQuantity() >= it.getQuantity()) {
+                    ps.commit(it.getQuantity());
+                } else {
+                    ps.decrease(it.getQuantity());
+                }
                 repo.save(ps);
             }
 
@@ -164,3 +169,6 @@ public class StockDomainService {
         }
     }
 }
+
+
+

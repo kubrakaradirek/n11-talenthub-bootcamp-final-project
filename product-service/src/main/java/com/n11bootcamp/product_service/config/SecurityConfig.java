@@ -17,7 +17,8 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable()) // API projelerinde CSRF kapatılır
                 .authorizeHttpRequests(auth -> auth
-                        // api/products ile başlayan tüm GET istekleri HERKESE AÇIK
+                        .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/products").permitAll()// api/products ile başlayan tüm GET istekleri HERKESE AÇIK
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
 
                         // Bunun dışındaki tüm istekler (POST, PUT, DELETE) için GİRİŞ YAPMAK ZORUNLU
