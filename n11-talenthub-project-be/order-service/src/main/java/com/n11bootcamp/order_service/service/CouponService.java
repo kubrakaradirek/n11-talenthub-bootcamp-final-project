@@ -58,6 +58,11 @@ public class CouponService {
     }
 
     public void createCouponForCompletedOrder(Long userId, Double totalPrice) {
+        if (userId == null) {
+            log.info("Coupon not created. userId=null, totalPrice={}, reason=missing_user_id", totalPrice);
+            return;
+        }
+
         if (totalPrice == null || totalPrice < COUPON_LIMIT) {
             log.info("Coupon not created. userId={}, totalPrice={}, reason=below_limit", userId, totalPrice);
             return;

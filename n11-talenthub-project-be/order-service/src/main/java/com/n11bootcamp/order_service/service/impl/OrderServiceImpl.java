@@ -73,6 +73,10 @@ public class OrderServiceImpl implements OrderService {
             order.setOrderDetails(toOrderDetails(request)); // Adres ve iletişim bilgilerini siparişe ekliyoruz.
 
             Order savedOrder = orderRepository.save(order); // Siparişi veritabanına kaydediyoruz.
+            couponService.createCouponForCompletedOrder(
+                    savedOrder.getUserId(),
+                    totalPrice
+            ); // Ödeme başarılı olduğu için kupon hakkını hemen oluşturuyoruz; kullanıcı beklemesin.
             publishStockReserveRequest(savedOrder); // Stok rezervasyonu için RabbitMQ mesajı gönderiyoruz.
             return toResponse(savedOrder); // Kaydedilen siparişi kullanıcıya cevap olarak dönüyoruz.
         } catch (RuntimeException exception) { // Sipariş sırasında oluşan iş hatalarını yakalıyoruz.
