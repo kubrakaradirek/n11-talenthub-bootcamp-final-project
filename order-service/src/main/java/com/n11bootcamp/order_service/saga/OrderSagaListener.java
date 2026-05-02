@@ -7,6 +7,7 @@ import com.n11bootcamp.order_service.entity.Order;
 import com.n11bootcamp.order_service.entity.OrderItem;
 import com.n11bootcamp.order_service.entity.OrderStatus;
 import com.n11bootcamp.order_service.repository.OrderRepository;
+import com.n11bootcamp.order_service.service.CouponService;
 import com.n11bootcamp.order_service.service.ShoppingCartClient;
 import com.n11bootcamp.order_service.service.StockServiceClient;
 import org.slf4j.Logger;
@@ -25,14 +26,17 @@ public class OrderSagaListener {
     private final OrderRepository orderRepository;
     private final StockServiceClient stockServiceClient;
     private final ShoppingCartClient shoppingCartClient;
+    private final CouponService couponService;
 
     public OrderSagaListener(
             OrderRepository orderRepository,
             StockServiceClient stockServiceClient,
-            ShoppingCartClient shoppingCartClient) {
+            ShoppingCartClient shoppingCartClient,
+            CouponService couponService) {
         this.orderRepository = orderRepository;
         this.stockServiceClient = stockServiceClient;
         this.shoppingCartClient = shoppingCartClient;
+        this.couponService = couponService;
     }
 
     @Transactional
@@ -57,6 +61,7 @@ public class OrderSagaListener {
         order.setStatus(OrderStatus.COMPLETED);
         orderRepository.save(order);
 
+        couponService.createCouponForCompletedOrder(order.getUserId(), order.getTotalPrice());
         clearCartAfterSuccessfulOrder(order);
     }
 

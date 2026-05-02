@@ -14,13 +14,13 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 
 @Configuration
-@EnableWebFluxSecurity //GATEWAY ŞARTI
+@EnableWebFluxSecurity
 public class SecurityConfig {
 
     @Bean
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration corsConfig = new CorsConfiguration();
-        // Vite varsayılan portu 5173
+        // React dev ortamı
         corsConfig.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
         corsConfig.setMaxAge(3600L);
         corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
@@ -32,19 +32,18 @@ public class SecurityConfig {
 
         return new CorsWebFilter(source);
     }
-    // GÜVENLİK FİLTRESİ: Gateway üzerinden geçen trafiği yönetir
+    // Gateway güvenlik kuralları
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         http
-                .csrf(ServerHttpSecurity.CsrfSpec::disable) // API'ler için CSRF'i kapandı
+                .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(exchanges -> exchanges
                         .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        // Kurallar sırasıyla
-                        .pathMatchers("/eureka/**").permitAll() // Eureka paneli açık
+                        .pathMatchers("/eureka/**").permitAll()
                         .pathMatchers("/swagger-ui.html", "/swagger-ui/**", "/webjars/**", "/v3/api-docs/**").permitAll()
-                        .pathMatchers("/api/user/signup", "/api/user/signin").permitAll() // Kayıt ve Giriş açık
+                        .pathMatchers("/api/user/signup", "/api/user/signin").permitAll()
                         .pathMatchers(HttpMethod.GET, "/api/products").permitAll()
-                        .pathMatchers(HttpMethod.GET, "/api/products/**").permitAll() // Ürün listeleme HERKESE açık
+                        .pathMatchers(HttpMethod.GET, "/api/products/**").permitAll()
                         .pathMatchers(HttpMethod.GET, "/api/stock/**").permitAll()
                         .pathMatchers("/api/shopping-cart/**").permitAll()
                         .pathMatchers("/api/payments/**", "/api/payments").authenticated()

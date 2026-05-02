@@ -14,18 +14,21 @@ import com.iyzipay.request.CreatePaymentRequest;
 import com.n11bootcamp.payment_service.client.IyzipayHttpClient;
 import com.n11bootcamp.payment_service.client.OrderClient;
 import com.n11bootcamp.payment_service.dto.AddressRequest;
+import com.n11bootcamp.payment_service.dto.CouponPreviewResponse;
 import com.n11bootcamp.payment_service.dto.OrderRequest;
 import com.n11bootcamp.payment_service.dto.OrderResponse;
 import com.n11bootcamp.payment_service.dto.PaymentItemRequest;
 import com.n11bootcamp.payment_service.dto.PaymentRequest;
 import com.n11bootcamp.payment_service.dto.PaymentResponse;
 import com.n11bootcamp.payment_service.exception.PaymentFailedException;
+import feign.FeignException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -46,7 +49,9 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public PaymentResponse pay(PaymentRequest request) {
         validateRequiredIyzipayFields(request);
-        CreatePaymentRequest iyzipayRequest = toIyzipayRequest(request);
+        BigDecimal originalTotal = totalPrice(request.getItems());
+        BigDecimal payableTotal = payableTotal(request, originalTotal);
+        CreatePaymentRequest iyzipayRequest = toIyzipayRequest(request, originalTotal, payableTotal);
 
         try {
             Payment payment = iyzipayHttpClient.createPayment(iyzipayRequest);
@@ -64,10 +69,13 @@ public class PaymentServiceImpl implements PaymentService {
             response.setStatus(payment.getStatus());
             response.setPaymentId(payment.getPaymentId());
             response.setConversationId(payment.getConversationId());
-            response.setPaidPrice(totalPrice(request.getItems()));
+            response.setPaidPrice(payableTotal);
             return response;
         } catch (PaymentFailedException exception) {
             throw exception;
+        } catch (FeignException exception) {
+            log.error("Order service error during payment status={}, body={}", exception.status(), exception.contentUTF8(), exception);
+            throw new PaymentFailedException(readableFeignMessage(exception));
         } catch (Exception exception) {
             log.error("Unexpected payment error conversationId={}", iyzipayRequest.getConversationId(), exception);
             throw new PaymentFailedException("Payment could not be completed", exception);
@@ -77,6 +85,7 @@ public class PaymentServiceImpl implements PaymentService {
     private OrderRequest toOrderRequest(PaymentRequest request) {
         OrderRequest orderRequest = new OrderRequest();
         orderRequest.setUsername(request.getUsername());
+        orderRequest.setUserId(request.getUserId());
         orderRequest.setFirstName(request.getBuyer().getName());
         orderRequest.setLastName(request.getBuyer().getSurname());
         orderRequest.setStreetAddress(request.getShippingAddress().getAddress());
@@ -84,6 +93,7 @@ public class PaymentServiceImpl implements PaymentService {
         orderRequest.setCountry(request.getShippingAddress().getCountry());
         orderRequest.setPhone(request.getBuyer().getGsmNumber());
         orderRequest.setEmail(request.getBuyer().getEmail());
+        orderRequest.setCouponCode(request.getCouponCode());
         orderRequest.setItems(request.getItems().stream().map(this::toOrderItem).toList());
         return orderRequest;
     }
@@ -97,15 +107,15 @@ public class PaymentServiceImpl implements PaymentService {
         return orderItem;
     }
 
-    private CreatePaymentRequest toIyzipayRequest(PaymentRequest request) {
-        BigDecimal total = totalPrice(request.getItems());
+    private CreatePaymentRequest toIyzipayRequest(PaymentRequest request, BigDecimal originalTotal, BigDecimal payableTotal) {
         String conversationId = "payment-" + request.getUsername() + "-" + UUID.randomUUID();
+        BigDecimal discountFactor = payableTotal.divide(originalTotal, 6, RoundingMode.HALF_UP);
 
         CreatePaymentRequest paymentRequest = new CreatePaymentRequest();
         paymentRequest.setLocale(Locale.TR.getValue());
         paymentRequest.setConversationId(conversationId);
-        paymentRequest.setPrice(total);
-        paymentRequest.setPaidPrice(total);
+        paymentRequest.setPrice(payableTotal);
+        paymentRequest.setPaidPrice(payableTotal);
         paymentRequest.setCurrency(Currency.TRY.name());
         paymentRequest.setInstallment(1);
         paymentRequest.setBasketId("cart-" + request.getUsername() + "-" + UUID.randomUUID());
@@ -115,7 +125,7 @@ public class PaymentServiceImpl implements PaymentService {
         paymentRequest.setBuyer(toBuyer(request));
         paymentRequest.setBillingAddress(toAddress(request.getBillingAddress(), buyerFullName(request)));
         paymentRequest.setShippingAddress(toAddress(request.getShippingAddress(), buyerFullName(request)));
-        paymentRequest.setBasketItems(toBasketItems(request.getItems()));
+        paymentRequest.setBasketItems(toBasketItems(request.getItems(), discountFactor, payableTotal));
         logIyzipayRequestSummary(paymentRequest, request);
         return paymentRequest;
     }
@@ -157,16 +167,39 @@ public class PaymentServiceImpl implements PaymentService {
         return address;
     }
 
-    private List<BasketItem> toBasketItems(List<PaymentItemRequest> items) {
-        return items.stream().map(item -> {
+    private List<BasketItem> toBasketItems(List<PaymentItemRequest> items, BigDecimal discountFactor, BigDecimal payableTotal) {
+        List<BasketItem> basketItems = new ArrayList<>();
+        BigDecimal calculatedTotal = BigDecimal.ZERO; // Kuruş farkını takip ediyoruz.
+
+        for (int i = 0; i < items.size(); i++) {
+            PaymentItemRequest item = items.get(i);
             BasketItem basketItem = new BasketItem();
             basketItem.setId(String.valueOf(item.getProductId()));
             basketItem.setName(item.getProductName());
             basketItem.setCategory1("KubaShop");
             basketItem.setItemType(BasketItemType.PHYSICAL.name());
-            basketItem.setPrice(lineTotal(item));
-            return basketItem;
-        }).toList();
+            BigDecimal itemPrice = lineTotal(item).multiply(discountFactor).setScale(2, RoundingMode.HALF_UP);
+            if (i == items.size() - 1) { // Son kalemde kuruş farkını kapatıyoruz.
+                itemPrice = payableTotal.subtract(calculatedTotal).setScale(2, RoundingMode.HALF_UP);
+            }
+            basketItem.setPrice(itemPrice);
+            calculatedTotal = calculatedTotal.add(itemPrice);
+            basketItems.add(basketItem);
+        }
+
+        return basketItems;
+    }
+
+    private BigDecimal payableTotal(PaymentRequest request, BigDecimal originalTotal) {
+        if (request.getCouponCode() == null || request.getCouponCode().isBlank()) {
+            return originalTotal;
+        }
+
+        CouponPreviewResponse coupon = orderClient.previewCoupon(
+                request.getUserId(),
+                request.getCouponCode(),
+                originalTotal.doubleValue()); // Kuponu order-service'e kontrol ettiriyoruz.
+        return BigDecimal.valueOf(coupon.getDiscountedTotal()).setScale(2, RoundingMode.HALF_UP);
     }
 
     private BigDecimal totalPrice(List<PaymentItemRequest> items) {
@@ -212,6 +245,36 @@ public class PaymentServiceImpl implements PaymentService {
         if (value == null || value.isBlank()) {
             throw new PaymentFailedException("Missing required Iyzico field: " + fieldName);
         }
+    }
+
+    private String readableFeignMessage(FeignException exception) {
+        String body = exception.contentUTF8();
+        if (body == null || body.isBlank()) {
+            return "Sipariş servisi ödeme sırasında hata döndü.";
+        }
+        String mesaj = extractJsonValue(body, "mesaj");
+        if (mesaj != null) {
+            return mesaj;
+        }
+        String errorMessage = extractJsonValue(body, "errorMessage");
+        if (errorMessage != null) {
+            return errorMessage;
+        }
+        return body;
+    }
+
+    private String extractJsonValue(String json, String fieldName) {
+        String marker = "\"" + fieldName + "\":\"";
+        int start = json.indexOf(marker);
+        if (start < 0) {
+            return null;
+        }
+        int valueStart = start + marker.length();
+        int valueEnd = json.indexOf("\"", valueStart);
+        if (valueEnd < 0) {
+            return null;
+        }
+        return json.substring(valueStart, valueEnd);
     }
 
     private void logIyzipayRequestSummary(CreatePaymentRequest paymentRequest, PaymentRequest request) {

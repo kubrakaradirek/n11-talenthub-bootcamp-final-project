@@ -18,7 +18,7 @@ const initialForm = {
     email: '',
 };
 
-function PaymentCheckout({ cart, username, onPaymentSuccess }) {
+function PaymentCheckout({ cart, username, userId, couponCode, onPaymentSuccess }) {
     const [form, setForm] = useState(initialForm);
     const [status, setStatus] = useState({ type: '', message: '' });
     const [submitting, setSubmitting] = useState(false);
@@ -33,22 +33,32 @@ function PaymentCheckout({ cart, username, onPaymentSuccess }) {
         if (submitting) return;
 
         if (!cart?.items?.length) {
-            setStatus({ type: 'error', message: 'Sepetiniz bos. Siparis olusturulamaz.' });
+            setStatus({ type: 'error', message: 'Sepetiniz boş. Sipariş oluşturulamaz.' });
+            return;
+        }
+
+        if (!userId) {
+            setStatus({ type: 'error', message: 'Kullanıcı id bulunamadı. Lütfen çıkış yapıp tekrar giriş yapın.' });
             return;
         }
 
         setSubmitting(true);
-        setStatus({ type: 'loading', message: 'Odeme islemi baslatiliyor...' });
+        setStatus({ type: 'loading', message: 'Ödeme işlemi başlatılıyor...' });
 
         try {
-            const order = await createOrderPayment(cart, { ...form, username });
+            const order = await createOrderPayment(cart, { ...form, username, userId, couponCode });
             setStatus({
                 type: 'success',
-                message: `Siparis basariyla olusturuldu. Siparis No: ${order.orderId}`,
+                message: `Sipariş başarıyla oluşturuldu. Sipariş No: ${order.orderId}`,
             });
             setTimeout(() => onPaymentSuccess?.(order), 1200);
         } catch (error) {
-            const message = error.response?.data?.errorMessage || error.response?.data?.message || 'Odeme sirasinda bir hata olustu.';
+            const message =
+                error.response?.data?.errorMessage ||
+                error.response?.data?.message ||
+                error.response?.data?.mesaj ||
+                error.message ||
+                'Ödeme sırasında bir hata oluştu.';
             setStatus({ type: 'error', message });
         } finally {
             setSubmitting(false);
@@ -57,15 +67,15 @@ function PaymentCheckout({ cart, username, onPaymentSuccess }) {
 
     return (
         <form className="payment-checkout" onSubmit={handleSubmit}>
-            <h3>Odeme ve Teslimat</h3>
+            <h3>Ödeme ve Teslimat</h3>
             <div className="payment-grid">
                 <input name="firstName" placeholder="Ad" value={form.firstName} onChange={handleChange} required />
                 <input name="lastName" placeholder="Soyad" value={form.lastName} onChange={handleChange} required />
                 <input name="email" type="email" placeholder="E-posta" value={form.email} onChange={handleChange} required />
                 <input name="phone" placeholder="Telefon" value={form.phone} onChange={handleChange} required />
                 <input name="identityNumber" placeholder="TCKN" value={form.identityNumber} onChange={handleChange} required />
-                <input name="city" placeholder="Sehir" value={form.city} onChange={handleChange} required />
-                <input name="country" placeholder="Ulke" value={form.country} onChange={handleChange} required />
+                <input name="city" placeholder="Şehir" value={form.city} onChange={handleChange} required />
+                <input name="country" placeholder="Ülke" value={form.country} onChange={handleChange} required />
                 <input name="zipCode" placeholder="Posta Kodu" value={form.zipCode} onChange={handleChange} />
             </div>
             <textarea
@@ -76,10 +86,10 @@ function PaymentCheckout({ cart, username, onPaymentSuccess }) {
                 required
             />
             <div className="payment-grid">
-                <input name="cardHolderName" placeholder="Kart Uzerindeki Ad" value={form.cardHolderName} onChange={handleChange} required />
-                <input name="cardNumber" placeholder="Kart Numarasi" value={form.cardNumber} onChange={handleChange} required />
+                <input name="cardHolderName" placeholder="Kart Üzerindeki Ad" value={form.cardHolderName} onChange={handleChange} required />
+                <input name="cardNumber" placeholder="Kart Numarası" value={form.cardNumber} onChange={handleChange} required />
                 <input name="expireMonth" placeholder="Ay" value={form.expireMonth} onChange={handleChange} required />
-                <input name="expireYear" placeholder="Yil" value={form.expireYear} onChange={handleChange} required />
+                <input name="expireYear" placeholder="Yıl" value={form.expireYear} onChange={handleChange} required />
                 <input name="cvc" placeholder="CVC" value={form.cvc} onChange={handleChange} required />
             </div>
 
@@ -89,7 +99,7 @@ function PaymentCheckout({ cart, username, onPaymentSuccess }) {
                 </div>
             )}
             <button className="checkout-btn" type="submit" disabled={submitting}>
-                {submitting ? 'Isleniyor...' : 'Siparisi Tamamla'}
+                {submitting ? 'İşleniyor...' : 'Siparişi Tamamla'}
             </button>
         </form>
     );

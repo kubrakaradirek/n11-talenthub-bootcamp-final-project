@@ -120,8 +120,6 @@ function ProductDetail() {
                     <h1 className="detail-title">{product.title}</h1>
 
                     <div className="price-box">
-                        <div className="old-price">{(product.price * 1.15).toFixed(0)} TL</div>
-                        <div className="discount-label">KUBASHOP'TA SEPETTE</div>
                         <div className="current-price">{product.price.toLocaleString()} TL</div>
                     </div>
 

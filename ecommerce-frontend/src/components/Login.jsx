@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom'; // Sadece Link kalmalı, sayfanın görünmesi için şart!
+import { Link } from 'react-router-dom';
 import './Auth.css';
 import apiClient from '../services/apiClient';
 
@@ -19,13 +19,15 @@ function Login() {
             if (response.status >= 200 && response.status < 300) {
                 const data = response.data;
 
-                // Başarılı girişte bilgileri localStorage'a kaydet
+                // Giriş bilgisini tarayıcıda tutuyoruz.
                 localStorage.setItem("kuba_token", data.accessToken);
                 localStorage.setItem("kuba_username", data.username);
+                localStorage.setItem("kuba_user_id", data.id);
+                localStorage.setItem("kuba_user", JSON.stringify(data));
 
                 setMessage({ text: "Giriş Başarılı! Anasayfaya yönlendiriliyorsunuz... 🚀", type: "success" });
 
-                // Navbar'ın kullanıcı adını okuyabilmesi için sayfayı href ile yönlendiriyoruz
+                // Navbar güncellensin diye sayfayı ana ekrana alıyoruz.
                 setTimeout(() => {
                     window.location.href = "/";
                 }, 1500);
@@ -49,7 +51,7 @@ function Login() {
                     <Link to="/register" className="auth-tab">Üye Ol</Link>
                 </div>
 
-                {/* Mesaj Gösterim Alanı */}
+                {/* Giriş mesajı */}
                 {message.text && (
                     <div style={{
                         padding: '10px',
@@ -75,7 +77,7 @@ function Login() {
                         required
                     />
 
-                    {/* Şifre ve Göz İkonu */}
+                    {/* Şifre alanı */}
                     <div className="password-wrapper">
                         <input
                             type={showPassword ? "text" : "password"}

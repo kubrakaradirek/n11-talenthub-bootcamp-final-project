@@ -14,6 +14,10 @@ public class PaymentRequest {
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "ayse02")
     private String username;
 
+    @NotNull
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "203")
+    private Long userId;
+
     @Valid
     @NotNull
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
@@ -39,12 +43,23 @@ public class PaymentRequest {
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
     private List<PaymentItemRequest> items;
 
+    @Schema(example = "KUBA20-ABC123")
+    private String couponCode;
+
     public String getUsername() {
         return username;
     }
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     public BuyerRequest getBuyer() {
@@ -85,5 +100,13 @@ public class PaymentRequest {
 
     public void setItems(List<PaymentItemRequest> items) {
         this.items = items;
+    }
+
+    public String getCouponCode() {
+        return couponCode;
+    }
+
+    public void setCouponCode(String couponCode) {
+        this.couponCode = couponCode;
     }
 }

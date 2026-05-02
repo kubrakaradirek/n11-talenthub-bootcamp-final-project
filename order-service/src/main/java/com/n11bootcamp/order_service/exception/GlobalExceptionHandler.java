@@ -1,23 +1,25 @@
-package com.n11bootcamp.order_service.exception; // Bu sınıfın hata yönetimi paketinde olduğunu söylüyoruz.
+package com.n11bootcamp.order_service.exception;
 
-import org.springframework.http.ResponseEntity; // HTTP cevabını status koduyla dönebilmek için kullanıyoruz.
-import org.springframework.web.bind.MethodArgumentNotValidException; // @Valid hatalarını yakalamak için kullanıyoruz.
-import org.springframework.web.bind.annotation.ExceptionHandler; // Hangi hata türünü yakalayacağımızı belirtmek için kullanıyoruz.
-import org.springframework.web.bind.annotation.RestControllerAdvice; // Tüm controller hatalarını tek yerden yakalamak için kullanıyoruz.
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-@RestControllerAdvice // Controller içinde oluşan hataları bu sınıfa yönlendiriyoruz.
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(RuntimeException.class) // RuntimeException türündeki iş hatalarını yakalıyoruz.
-    public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException exception) { // İş hatası gelince bu metot çalışır.
-        ErrorResponse errorResponse = new ErrorResponse(400, exception.getMessage()); // Basit hata JSON cevabını hazırlıyoruz.
-        return ResponseEntity.badRequest().body(errorResponse); // Kullanıcıya 400 koduyla hata cevabı dönüyoruz.
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException exception) {
+        // İş kuralı hatalarını tek formatta dönüyoruz.
+        ErrorResponse errorResponse = new ErrorResponse(400, exception.getMessage());
+        return ResponseEntity.badRequest().body(errorResponse);
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class) // Kullanıcı eksik veya hatalı bilgi girerse bu hata yakalanır.
-    public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException exception) { // Validasyon hatası gelince bu metot çalışır.
-        String message = exception.getBindingResult().getFieldErrors().get(0).getDefaultMessage(); // İlk validasyon mesajını alıyoruz.
-        ErrorResponse errorResponse = new ErrorResponse(400, message); // Mesajı bizim basit JSON formatımıza koyuyoruz.
-        return ResponseEntity.badRequest().body(errorResponse); // Kullanıcıya 400 koduyla validasyon cevabı dönüyoruz.
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException exception) {
+        // Eksik veya hatalı alan varsa ilk mesajı kullanıcıya gösteriyoruz.
+        String message = exception.getBindingResult().getFieldErrors().get(0).getDefaultMessage();
+        ErrorResponse errorResponse = new ErrorResponse(400, message);
+        return ResponseEntity.badRequest().body(errorResponse);
     }
 }

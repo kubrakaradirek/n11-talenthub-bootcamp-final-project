@@ -6,7 +6,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
 import lombok.Data;
 
-@Data// Bu notasyon getId(), setId() gibi her şeyi otomatik üretir
+@Data
 public class ShoppingCart {
     @Id
     private Long id;

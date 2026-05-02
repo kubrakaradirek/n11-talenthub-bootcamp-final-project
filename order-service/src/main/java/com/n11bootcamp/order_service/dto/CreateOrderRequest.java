@@ -12,29 +12,35 @@ import java.util.List;
 
 public class CreateOrderRequest {
 
-    @NotBlank(message = "Kullanıcı adı boş olamaz") // Bu alan boş gelirse validasyon hatası verir.
+    @NotBlank(message = "Kullanıcı adı boş olamaz")
     private String username;
-    @NotBlank(message = "Ad boş olamaz") // Müşteri adı zorunlu olsun diye kullanıyoruz.
+    @NotNull(message = "Kullanıcı id boş olamaz")
+    private Long userId;
+    @NotBlank(message = "Ad boş olamaz")
     private String firstName;
-    @NotBlank(message = "Soyad boş olamaz") // Müşteri soyadı zorunlu olsun diye kullanıyoruz.
+    @NotBlank(message = "Soyad boş olamaz")
     private String lastName;
-    @NotBlank(message = "Adres boş olamaz") // Teslimat adresi boş kalmasın diye kullanıyoruz.
+    @NotBlank(message = "Adres boş olamaz")
     private String streetAddress;
-    @NotBlank(message = "Şehir boş olamaz") // Şehir bilgisi zorunlu olsun diye kullanıyoruz.
+    @NotBlank(message = "Şehir boş olamaz")
     private String city;
-    @NotBlank(message = "Ülke boş olamaz") // Ülke bilgisi zorunlu olsun diye kullanıyoruz.
+    @NotBlank(message = "Ülke boş olamaz")
     private String country;
-    @NotBlank(message = "Telefon boş olamaz") // Telefon bilgisi zorunlu olsun diye kullanıyoruz.
+    @NotBlank(message = "Telefon boş olamaz")
     private String phone;
-    @Email(message = "Email formatı hatalı") // Email yanlış yazılırsa validasyon hatası verir.
-    @NotBlank(message = "Email boş olamaz") // Email alanının boş kalmasını engelliyoruz.
+    @Email(message = "Email formatı hatalı")
+    @NotBlank(message = "Email boş olamaz")
     private String email;
-    @Valid // Listenin içindeki ürünleri de kontrol etmek için kullanıyoruz.
-    @NotEmpty(message = "Sipariş en az bir ürün içermelidir") // Sepet boşsa sipariş oluşmasın diye kullanıyoruz.
+    private String couponCode;
+    @Valid
+    @NotEmpty(message = "Sipariş en az bir ürün içermelidir")
     private List<OrderItemRequest> items;
 
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
+
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
 
     public String getFirstName() { return firstName; }
     public void setFirstName(String firstName) { this.firstName = firstName; }
@@ -57,19 +63,22 @@ public class CreateOrderRequest {
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
 
+    public String getCouponCode() { return couponCode; }
+    public void setCouponCode(String couponCode) { this.couponCode = couponCode; }
+
     public List<OrderItemRequest> getItems() { return items; }
     public void setItems(List<OrderItemRequest> items) { this.items = items; }
 
     public static class OrderItemRequest {
-        @NotNull(message = "Ürün id boş olamaz") // Hangi ürün alınacak bilmek için zorunlu.
+        @NotNull(message = "Ürün id boş olamaz")
         private Long productId;
-        @NotBlank(message = "Ürün adı boş olamaz") // Ürün adını sipariş detayında göstermek için zorunlu.
+        @NotBlank(message = "Ürün adı boş olamaz")
         private String productName;
-        @NotNull(message = "Fiyat boş olamaz") // Toplam tutarı hesaplamak için zorunlu.
-        @DecimalMin(value = "1.0", message = "Fiyat 1 veya daha büyük olmalıdır") // Sıfır veya negatif fiyatı engelliyoruz.
+        @NotNull(message = "Fiyat boş olamaz")
+        @DecimalMin(value = "1.0", message = "Fiyat 1 veya daha büyük olmalıdır")
         private Double price;
-        @NotNull(message = "Adet boş olamaz") // Kaç adet alınacağını bilmek için zorunlu.
-        @Min(value = 1, message = "Adet 1 veya daha büyük olmalıdır") // Sıfır veya negatif adedi engelliyoruz.
+        @NotNull(message = "Adet boş olamaz")
+        @Min(value = 1, message = "Adet 1 veya daha büyük olmalıdır")
         private Integer quantity;
 
         public Long getProductId() { return productId; }

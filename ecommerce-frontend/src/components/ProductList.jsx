@@ -117,8 +117,6 @@ function ProductList() {
 
             <div className="product-grid">
                 {products.map((product) => {
-                    const stars = "★".repeat(Math.floor(Math.random() * 2) + 4);
-
                     return (
                         <Link to={`/product/${product.id}`} key={product.id} className="product-card-link">
                             <div className="product-card">
@@ -133,9 +131,7 @@ function ProductList() {
                                 </div>
                                 <div className="product-details">
                                     <h3 className="product-name">{product.title}</h3>
-                                    <div className="product-rating">{stars}</div>
                                     <div className="price-container">
-                                        <span className="old-price">{(product.price * 1.15).toFixed(0)} TL</span>
                                         <span className="current-price">{product.price.toLocaleString()} TL</span>
                                     </div>
                                     <span className="shipping-badge">Kargo Bedava</span>

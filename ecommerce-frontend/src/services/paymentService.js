@@ -2,6 +2,7 @@ import apiClient from './apiClient';
 
 export const buildPaymentPayloadFromCart = (cart, checkoutForm = {}) => ({
     username: checkoutForm.username,
+    userId: checkoutForm.userId,
     buyer: {
         id: checkoutForm.username,
         name: checkoutForm.firstName,
@@ -33,6 +34,7 @@ export const buildPaymentPayloadFromCart = (cart, checkoutForm = {}) => ({
         country: checkoutForm.country,
         zipCode: checkoutForm.zipCode,
     },
+    couponCode: checkoutForm.couponCode,
     items: (cart?.items || []).map((item) => ({
         productId: item.productId,
         productName: item.title || item.productName,

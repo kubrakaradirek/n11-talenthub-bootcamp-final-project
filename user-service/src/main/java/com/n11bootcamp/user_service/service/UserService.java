@@ -56,15 +56,11 @@ public class UserService {
     @Autowired
     private KeycloakService keycloakService;
 
-    // Şifreleyiciyi sınıf seviyesinde bir kez tanımlamak daha performanslıdır
+    // Şifreleri DB'ye düz metin yazmıyoruz.
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    /**
-     * 1. YENİ KULLANICI KAYDI (SIGNUP)
-     * Önce kendi DB'mizi kontrol eder, sonra Keycloak'a yazar, en son kendi DB'mize kaydeder.
-     */
     public ResponseEntity<?> registerUser(SignupRequest signUpRequest) {
-        // A. Veritabanı Kontrolleri
+        // Önce aynı kullanıcı var mı bakıyoruz.
         if (userRepository.existsByUsername(signUpRequest.getUsername())) {
             return ResponseEntity.badRequest().body(new MessageResponse("Hata: Bu kullanıcı adı zaten alınmış!"));
         }
@@ -72,14 +68,14 @@ public class UserService {
             return ResponseEntity.badRequest().body(new MessageResponse("Hata: Bu email adresi zaten kullanımda!"));
         }
 
-        // B. Keycloak'a Kaydet (Eğer Keycloak hata verirse kod burada kesilir, DB'ye hatalı kayıt atılmaz)
+        // Keycloak kaydı başarılı olursa kendi DB'mize geçiyoruz.
         keycloakService.createUserInKeycloak(signUpRequest);
 
-        // C. Kendi Veritabanımıza Kaydet
+        // Uygulamanın kendi kullanıcı kaydı
         User user = new User(
                 signUpRequest.getUsername(),
                 signUpRequest.getEmail(),
-                passwordEncoder.encode(signUpRequest.getPassword()), // Şifreyi şifreleyerek kaydetmek güvenlik için şarttır
+                passwordEncoder.encode(signUpRequest.getPassword()),
                 "Customer"
         );
         userRepository.save(user);
@@ -87,20 +83,16 @@ public class UserService {
         return ResponseEntity.ok(new MessageResponse("Kullanıcı hem Keycloak'a hem de sisteme başarıyla kaydedildi!"));
     }
 
-    /**
-     * 2. KULLANICI GİRİŞİ (SIGNIN)
-     * Kullanıcıyı DB'den bulur, Keycloak'tan Token alır.
-     */
     public ResponseEntity<?> authenticateUser(LoginRequest loginRequest) {
         User user;
         try {
-            // Kullanıcıyı veritabanından bul
+            // Önce bizde kayıtlı mı kontrol ediyoruz.
             user = userRepository.findByUsername(loginRequest.getUsername()).orElseThrow();
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new MessageResponse("Hata: Kullanıcı bulunamadı!"));
         }
 
-        // Apache HttpClient ile Keycloak'tan Token İsteği
+        // Keycloak token isteği
         HttpClient httpClient = HttpClients.createDefault();
         HttpPost httpPost = new HttpPost(jwtIssuerUri.trim());
 
@@ -119,7 +111,7 @@ public class UserService {
 
             accessToken = extractAccessToken(responseBody);
 
-            // Şifre yanlışsa Keycloak token vermez, bunu yakalayalım
+            // Token yoksa giriş başarısızdır.
             if (accessToken == null || accessToken.isEmpty()) {
                 return ResponseEntity.status(401).body(new MessageResponse("Hata: Kimlik doğrulaması başarısız! Şifrenizi kontrol edin."));
             }
@@ -129,13 +121,10 @@ public class UserService {
             return ResponseEntity.internalServerError().body(new MessageResponse("Hata: Keycloak sunucusuna ulaşılamadı."));
         }
 
-        // Token ve kullanıcı detaylarını dön
+        // Frontend'e token ve kullanıcı bilgisini dönüyoruz.
         return ResponseEntity.ok(new JwtResponse(accessToken, user.getId(), user.getUsername(), user.getEmail(), user.getRole()));
     }
 
-    /**
-     * YARDIMCI METOD: JSON response'tan "access_token" değerini çıkarır.
-     */
     private static String extractAccessToken(String jsonResponse) {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
@@ -146,15 +135,12 @@ public class UserService {
         }
     }
 
-    /**
-     * 3. KULLANICIYI SİLME
-     */
     public ResponseEntity<?> deleteUser(Long userId) {
         try {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new EntityNotFoundException("User not found!"));
 
-            // Kullanıcının sepeti varsa sil
+            // Kullanıcının sepeti varsa onu da temizliyoruz.
             try {
                 ShoppingCart shoppingCart = restTemplate.getForObject(
                         "http://SHOPPING-CART-SERVICE/api/shopping-cart/by-name/" + user.getUsername(),
@@ -164,14 +150,10 @@ public class UserService {
                     restTemplate.delete("http://SHOPPING-CART-SERVICE/api/shopping-cart/" + shoppingCart.getId());
                 }
             } catch (Exception e) {
-                // Sepet bulunamazsa işlemi kesme, devam et
+                // Sepet yoksa sorun değil, kullanıcı silme devam eder.
             }
 
-            // DB'den kullanıcıyı sil
             userRepository.delete(user);
-
-            // İleri Seviye Not: Gelecekte buraya KeycloakService içinden
-            // kullanıcıyı Keycloak'tan da silecek bir metod eklenebilir.
 
             return ResponseEntity.ok(new MessageResponse("Kullanıcı başarıyla silindi!"));
 
@@ -183,22 +165,18 @@ public class UserService {
         }
     }
 
-    /**
-     * 4. KULLANICI GÜNCELLEME
-     */
     public ResponseEntity<?> updateUser(Long userId, UpdateUserRequest updateUserRequest) {
         try {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new EntityNotFoundException("User not found!"));
 
-            // Şifre güncelleniyorsa tekrar şifrele
+            // Yeni şifre geldiyse tekrar şifreliyoruz.
             if (updateUserRequest.getPassword() != null && !updateUserRequest.getPassword().isEmpty()) {
                 user.setPassword(passwordEncoder.encode(updateUserRequest.getPassword()));
             }
 
-            // Email güncelleniyorsa başkasında var mı diye kontrol et
+            // Email değişiyorsa çakışma var mı bakıyoruz.
             if (updateUserRequest.getEmail() != null && !updateUserRequest.getEmail().isEmpty()) {
-                // Sadece yeni email eskisinden farklıysa kontrol et
                 if (!user.getEmail().equals(updateUserRequest.getEmail()) && userRepository.existsByEmail(updateUserRequest.getEmail())) {
                     return ResponseEntity.badRequest().body(new MessageResponse("Hata: Bu email adresi zaten kullanımda!"));
                 }

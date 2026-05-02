@@ -8,6 +8,7 @@ import com.n11bootcamp.order_service.entity.OrderDetails;
 import com.n11bootcamp.order_service.entity.OrderItem;
 import com.n11bootcamp.order_service.entity.OrderStatus;
 import com.n11bootcamp.order_service.repository.OrderRepository;
+import com.n11bootcamp.order_service.service.CouponService;
 import com.n11bootcamp.order_service.service.OrderService;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,6 +27,7 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
     private final RabbitTemplate rabbitTemplate;
+    private final CouponService couponService;
 
     @Value("${stock.rabbit.exchange}")
     private String stockExchange;
@@ -33,9 +35,10 @@ public class OrderServiceImpl implements OrderService {
     @Value("${stock.rabbit.reserveRequestedRoutingKey}")
     private String stockReserveRequestedRoutingKey;
 
-    public OrderServiceImpl(OrderRepository orderRepository, RabbitTemplate rabbitTemplate) {
+    public OrderServiceImpl(OrderRepository orderRepository, RabbitTemplate rabbitTemplate, CouponService couponService) {
         this.orderRepository = orderRepository;
         this.rabbitTemplate = rabbitTemplate;
+        this.couponService = couponService;
     }
 
     @Override
@@ -50,6 +53,7 @@ public class OrderServiceImpl implements OrderService {
 
             Order order = new Order(); // Veritabanına kaydedilecek yeni sipariş nesnesini oluşturuyoruz.
             order.setUsername(request.getUsername()); // Siparişin hangi kullanıcıya ait olduğunu set ediyoruz.
+            order.setUserId(request.getUserId()); // Kupon üretirken gerçek kullanıcı id bilgisini kullanmak için set ediyoruz.
             order.setStatus(OrderStatus.CREATED); // Siparişi ilk olarak CREATED durumunda başlatıyoruz.
 
             List<OrderItem> items = request.getItems().stream() // İstekten gelen ürün listesini sipariş ürünlerine çeviriyoruz.
@@ -63,7 +67,9 @@ public class OrderServiceImpl implements OrderService {
                     })
                     .toList(); // Dönüşen ürünleri liste haline getiriyoruz.
             order.setItems(items); // Hazırladığımız ürünleri siparişe bağlıyoruz.
-            order.setTotalPrice(calculateTotal(items)); // Siparişin toplam fiyatını hesaplayıp set ediyoruz.
+            Double totalPrice = calculateTotal(items); // Siparişin indirimsiz toplam fiyatını hesaplıyoruz.
+            Double finalPrice = couponService.applyCouponIfPresent(request.getUserId(), request.getCouponCode(), totalPrice); // Kupon varsa yüzde 20 indirimi uyguluyoruz.
+            order.setTotalPrice(finalPrice); // Siparişin ödenecek son toplamını set ediyoruz.
             order.setOrderDetails(toOrderDetails(request)); // Adres ve iletişim bilgilerini siparişe ekliyoruz.
 
             Order savedOrder = orderRepository.save(order); // Siparişi veritabanına kaydediyoruz.

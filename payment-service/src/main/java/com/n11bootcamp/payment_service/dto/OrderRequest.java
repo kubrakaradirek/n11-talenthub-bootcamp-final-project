@@ -5,6 +5,7 @@ import java.util.List;
 public class OrderRequest {
 
     private String username;
+    private Long userId;
     private String firstName;
     private String lastName;
     private String streetAddress;
@@ -12,6 +13,7 @@ public class OrderRequest {
     private String country;
     private String phone;
     private String email;
+    private String couponCode;
     private List<OrderItemRequest> items;
 
     public String getUsername() {
@@ -20,6 +22,14 @@ public class OrderRequest {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     public String getFirstName() {
@@ -76,6 +86,14 @@ public class OrderRequest {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getCouponCode() {
+        return couponCode;
+    }
+
+    public void setCouponCode(String couponCode) {
+        this.couponCode = couponCode;
     }
 
     public List<OrderItemRequest> getItems() {

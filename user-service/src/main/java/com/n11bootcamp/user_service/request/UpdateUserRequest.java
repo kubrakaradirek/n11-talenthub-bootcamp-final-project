@@ -15,8 +15,6 @@ public class UpdateUserRequest {
     @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED, example = "new-email@gmail.com")
     private String email;
 
-    // Getters and setters
-
     public String getPassword() {
         return password;
     }

@@ -1,0 +1,29 @@
+.announcement-bar {
+    width: 100%;
+    overflow: hidden;
+    background: linear-gradient(90deg, #080808, #b90f1f, #080808);
+    border-bottom: 1px solid rgba(255, 204, 0, 0.45);
+    color: #ffffff;
+    font-family: 'Montserrat', 'Segoe UI', sans-serif;
+}
+
+.announcement-track {
+    display: flex;
+    width: max-content;
+    gap: 42px;
+    padding: 9px 0;
+    animation: announcementMove 26s linear infinite;
+}
+
+.announcement-track span {
+    color: #ffcc00;
+    font-size: 13px;
+    font-weight: 900;
+    white-space: nowrap;
+    letter-spacing: 0;
+}
+
+@keyframes announcementMove {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+}

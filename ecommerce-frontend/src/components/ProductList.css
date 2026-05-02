@@ -201,7 +201,7 @@
 .price-container {
     text-align: center;
     margin-bottom: 15px;
-    min-height: 60px;
+    min-height: 36px;
     display: flex;
     flex-direction: column;
     justify-content: center;

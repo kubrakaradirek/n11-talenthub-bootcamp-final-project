@@ -1,4 +1,4 @@
-/* Mesaj Kutusu Stilleri */
+/* Form mesajları */
 .message-box {
     padding: 15px;
     border-radius: 8px;
@@ -12,11 +12,11 @@
 .message-box.success { background-color: #ecfdf5; color: #10b981; border: 1px solid #a7f3d0; }
 .message-box.error { background-color: #fef2f2; color: #ef4444; border: 1px solid #fecaca; }
 body {
-    background-color: #111827; /* Çok şık ve derin bir siyah/koyu lacivert tonu */
+    background-color: #111827;
     margin: 0;
 }
 
-/* NAVBAR (Üst Menü - İstersen burası beyaz kalabilir, karta uyum sağlar) */
+/* Üst menü */
 .kubashop-navbar {
     background: white;
     border-bottom: 1px solid #e2e8f0;
@@ -26,7 +26,7 @@ body {
     width: 100%;
 }
 
-/* Tüm Sayfanın Arka Planı (Ortadaki karenin DIŞI koyu oldu) */
+/* Sayfa zemini */
 .auth-container {
     display: flex;
     justify-content: center;
@@ -34,10 +34,9 @@ body {
     min-height: calc(100vh - 90px);
     padding: 40px 20px;
     font-family: 'Montserrat', sans-serif;
-    background-color: #111827; /* Arka plan o efsane koyu renk oldu */
+    background-color: #111827;
 }
 
-/* (Aşağıdaki .auth-card ve diğer kısımlar aynı kalacak) */
 .navbar-container { max-width: 1300px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; }
 .navbar-logo { font-size: 2.5rem; font-weight: 800; color: #2f3542; text-decoration: none; }
 .navbar-logo span { color: #ff4757; }
@@ -52,25 +51,25 @@ body {
 .auth-links a:hover { color: #ff4757; }
 .divider { margin: 0 8px; color: #dfe4ea; font-weight: 300; }
 
-/* AUTHENTICATION SAYFALARI (Giriş / Kayıt) */
+/* Giriş ve kayıt ekranları */
 .auth-container {
     display: flex;
     justify-content: center;
-    align-items: center; /* DİKEYDE VE YATAYDA TAM ORTALAR */
-    min-height: calc(100vh - 90px); /* Ekranın tamamını kaplar */
+    align-items: center;
+    min-height: calc(100vh - 90px);
     padding: 40px 20px;
     font-family: 'Montserrat', sans-serif;
     background-color: #f8fafc;
 }
 
-/* Ortadaki Form Karesi (Burası aydınlık ve ferah kalıyor) */
+/* Form kartı */
 .auth-card {
     background: #ffffff;
     width: 100%;
     max-width: 550px;
     border-radius: 20px;
     padding: 60px 50px;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.4); /* Koyu zeminde daha şık durması için gölge belirginleşti */
+    box-shadow: 0 15px 40px rgba(0,0,0,0.4);
     border: 1px solid #334155;
     text-align: center;
 }
@@ -87,7 +86,7 @@ body {
 
 .auth-form { display: flex; flex-direction: column; gap: 20px; text-align: left; }
 .auth-input {
-    padding: 18px 25px; /* INPUTLAR BÜYÜTÜLDÜ */
+    padding: 18px 25px;
     border: 2px solid #f1f2f6;
     border-radius: 12px;
     font-size: 15px;
@@ -104,7 +103,7 @@ body {
     background: #2f3542;
     color: white;
     border: none;
-    padding: 20px; /* BUTON BÜYÜTÜLDÜ */
+    padding: 20px;
     border-radius: 12px;
     font-size: 18px;
     font-weight: 800;
@@ -116,7 +115,7 @@ body {
 }
 .auth-submit-btn:hover { background: #ff4757; transform: translateY(-3px); box-shadow: 0 10px 25px rgba(255, 71, 87, 0.25); }
 
-/* Checkbox Alanları */
+/* Checkbox alanı */
 .auth-checkboxes { display: flex; flex-direction: column; gap: 15px; margin-top: 10px; margin-bottom: 10px; }
 .checkbox-label { display: flex; align-items: flex-start; gap: 12px; font-size: 13px; color: #747d8c; font-weight: 600; line-height: 1.6; cursor: pointer; }
 .checkbox-label input { margin-top: 3px; width: 18px; height: 18px; accent-color: #ff4757; cursor: pointer; }
@@ -124,10 +123,10 @@ body {
 .kvkk-text { font-size: 12px; color: #a4b0be; line-height: 1.6; text-align: justify; margin-top: 10px; }
 .kvkk-text a { color: #747d8c; text-decoration: underline; font-weight: 600;}
 
-/* Footer */
+/* Alt bilgi */
 .auth-footer { margin-top: 40px; font-size: 13px; color: #a4b0be; line-height: 1.6; border-top: 1px dashed #dfe4ea; padding-top: 30px; }
 .auth-footer strong { color: #2f3542; font-size: 15px; }
-/* Şifre Göz İkonu Ayarları */
+/* Şifre görünürlük butonu */
 .password-wrapper {
     position: relative;
     display: flex;
@@ -136,7 +135,7 @@ body {
 
 .password-wrapper .auth-input {
     width: 100%;
-    padding-right: 45px; /* Göz ikonu için sağdan boşluk bıraktık */
+    padding-right: 45px;
 }
 
 .password-toggle-btn {

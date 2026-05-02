@@ -5,6 +5,7 @@ import ProductDetail from './components/ProductDetail';
 import Login from './components/Login';
 import Register from './components/Register';
 import CartPage from './components/CartPage';
+import AnnouncementBar from './components/AnnouncementBar';
 import './App.css';
 
 function App() {
@@ -26,6 +27,8 @@ function App() {
     const handleLogout = () => {
         localStorage.removeItem("kuba_token");
         localStorage.removeItem("kuba_username");
+        localStorage.removeItem("kuba_user_id");
+        localStorage.removeItem("kuba_user");
         setLoggedInUser(null);
         window.location.href = "/";
     };
@@ -33,6 +36,7 @@ function App() {
     return (
         <Router>
             <div className="min-h-screen">
+                <AnnouncementBar />
                 <nav className="kubashop-navbar">
                     <div className="navbar-container">
                         <Link to="/" className="navbar-logo" onClick={checkUser}>
@@ -40,7 +44,6 @@ function App() {
                         </Link>
 
                         <div className="navbar-account">
-                            <div className="account-icon">KS</div>
                             <div className="account-links">
                                 <span className="account-title">HESABIM</span>
                                 <div className="auth-links">

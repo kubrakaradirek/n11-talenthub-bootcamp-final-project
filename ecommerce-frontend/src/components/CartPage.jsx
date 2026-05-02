@@ -3,16 +3,48 @@ import { useNavigate } from 'react-router-dom';
 import './CartPage.css';
 import PaymentCheckout from './PaymentCheckout';
 import { getCart, removeCartItem, updateCartQuantity } from '../services/cartService';
+import { getUnusedCoupons, previewCoupon } from '../services/couponService';
 
 const CartPage = () => {
     const [cart, setCart] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [couponCode, setCouponCode] = useState('');
+    const [appliedCoupon, setAppliedCoupon] = useState(null);
+    const [couponMessage, setCouponMessage] = useState('');
+    const [activeCoupons, setActiveCoupons] = useState([]);
     const navigate = useNavigate();
+
+    const getCurrentUserId = () => {
+        const storedUserId = localStorage.getItem("kuba_user_id");
+        if (storedUserId) {
+            return Number(storedUserId);
+        }
+
+        const storedUser = localStorage.getItem("kuba_user");
+        return storedUser ? Number(JSON.parse(storedUser).id) : null;
+    };
 
     useEffect(() => {
         fetchCart();
+        fetchActiveCoupons();
     }, []);
+
+    const fetchActiveCoupons = async () => {
+        const userId = getCurrentUserId();
+        if (!userId) {
+            setActiveCoupons([]);
+            return;
+        }
+
+        try {
+            const coupons = await getUnusedCoupons(userId);
+            setActiveCoupons(Array.isArray(coupons) ? coupons : []);
+        } catch (error) {
+            console.error("Aktif kuponlar yüklenemedi:", error);
+            setActiveCoupons([]);
+        }
+    };
 
     const fetchCart = async () => {
         const username = localStorage.getItem("kuba_username");
@@ -29,6 +61,8 @@ const CartPage = () => {
         try {
             const data = await getCart(username);
             setCart(data);
+            setAppliedCoupon(null);
+            setCouponMessage('');
         } catch (error) {
             console.error("Sepet yüklenemedi:", error);
             setError('Sepet bilgilerine şu an ulaşılamıyor, lütfen tekrar deneyin.');
@@ -43,11 +77,24 @@ const CartPage = () => {
 
         if (newQuantity < 1) return;
 
+        const previousCart = cart; // Hata olursa eski sepeti geri alırız.
+        const updatedItems = cart.items.map((item) =>
+            item.productId === productId ? { ...item, quantity: newQuantity } : item
+        );
+        const updatedTotalPrice = updatedItems.reduce(
+            (total, item) => total + (item.price * item.quantity),
+            0
+        );
+
+        setCart({ ...cart, items: updatedItems, totalPrice: updatedTotalPrice });
+        setAppliedCoupon(null); // Sepet değişince kupon hesabını sıfırla.
+        setCouponMessage('Sepet değiştiği için kuponu tekrar uygulayabilirsiniz.');
+
         try {
             await updateCartQuantity(username, productId, newQuantity);
-            fetchCart();
         } catch (error) {
             console.error("Miktar güncellenirken hata:", error);
+            setCart(previousCart);
             setError('Ürün adedi güncellenemedi, lütfen tekrar deneyin.');
         }
     };
@@ -61,6 +108,30 @@ const CartPage = () => {
         } catch (error) {
             console.error("Ürün silinirken hata:", error);
             setError('Ürün sepetten silinemedi, lütfen tekrar deneyin.');
+        }
+    };
+
+    const handleApplyCoupon = async () => {
+        const userId = getCurrentUserId();
+
+        if (!userId) {
+            setCouponMessage('Kupon kullanmak için lütfen çıkış yapıp tekrar giriş yapın.');
+            return;
+        }
+
+        if (!couponCode.trim()) {
+            setCouponMessage('Lütfen kupon kodu girin.');
+            return;
+        }
+
+        try {
+            const coupon = await previewCoupon(userId, couponCode, cart.totalPrice);
+            setAppliedCoupon(coupon);
+            setCouponMessage(coupon.message || 'Kupon Başarıyla Uygulandı: %20 İndirim');
+        } catch (error) {
+            console.error("Kupon uygulanamadı:", error);
+            setAppliedCoupon(null);
+            setCouponMessage('Kupon kodu geçersiz veya daha önce kullanılmış.');
         }
     };
 
@@ -118,6 +189,14 @@ const CartPage = () => {
 
             <div className="cart-page-container">
                 <div className="cart-items-section">
+                    <div className="cart-promo-banner">
+                        <div>
+                            <span>Yeni Kampanya</span>
+                            <h3>İlk kez 10.000 TL ve üzeri satın alımınızı tamamlayın, sonraki alışveriş için %20 kupon kazanın!</h3>
+                        </div>
+                        <strong>10.000 TL+</strong>
+                    </div>
+
                     <div className="cart-header-top">
                         <h2>Sepetim</h2>
                         <span className="cart-count">({cart.items.length} Ürün)</span>
@@ -183,16 +262,50 @@ const CartPage = () => {
                     </div>
                     <div className="summary-row discount">
                         <span>İndirim</span>
-                        <span>-0,00 TL</span>
+                        <span>-{(appliedCoupon?.discountAmount || 0).toLocaleString('tr-TR')} TL</span>
                     </div>
                     <hr className="summary-divider" />
                     <div className="summary-total">
                         <span>Toplam <small>KDV Dahil</small></span>
-                        <span className="total-price">{cart.totalPrice.toLocaleString('tr-TR')} TL</span>
+                        <span className="total-price">{(appliedCoupon?.discountedTotal || cart.totalPrice).toLocaleString('tr-TR')} TL</span>
+                    </div>
+                    <div className="coupon-box">
+                        <label>Kupon Kodu Gir</label>
+                        <div className="coupon-input-row">
+                            <input
+                                value={couponCode}
+                                onChange={(event) => setCouponCode(event.target.value)}
+                                placeholder="KUBA20-ABC123"
+                            />
+                            <button type="button" onClick={handleApplyCoupon}>Uygula</button>
+                        </div>
+                        {couponMessage && (
+                            <div className={`coupon-message ${appliedCoupon ? 'success' : 'error'}`}>
+                                {couponMessage}
+                            </div>
+                        )}
+                        {activeCoupons.length > 0 && (
+                            <div className="active-coupons-inline">
+                                <span className="active-coupons-title">Aktif Kuponlar</span>
+                                {activeCoupons.map((coupon) => (
+                                    <div className="active-coupon-row" key={coupon.id}>
+                                        <div>
+                                            <strong>{coupon.code}</strong>
+                                            <small>%20 indirim kuponu</small>
+                                        </div>
+                                        <button type="button" onClick={() => setCouponCode(coupon.code)}>
+                                            Kodu Kullan
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                     <PaymentCheckout
                         cart={cart}
                         username={localStorage.getItem("kuba_username")}
+                        userId={getCurrentUserId()}
+                        couponCode={appliedCoupon ? couponCode : ''}
                         onPaymentSuccess={fetchCart}
                     />
 

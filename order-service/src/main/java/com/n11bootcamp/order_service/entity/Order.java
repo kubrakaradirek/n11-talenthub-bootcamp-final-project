@@ -22,6 +22,7 @@ public class Order {
     private Long id;
 
     private String username;
+    private Long userId;
     private Double totalPrice;
 
     @Enumerated(EnumType.STRING)
@@ -38,6 +39,9 @@ public class Order {
 
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
+
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
 
     public Double getTotalPrice() { return totalPrice; }
     public void setTotalPrice(Double totalPrice) { this.totalPrice = totalPrice; }
