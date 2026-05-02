@@ -23,7 +23,7 @@ public class OpenApiConfig {
                                 .bearerFormat("JWT")))
                 .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
                 .servers(List.of(new Server()
-                        .url("http://localhost:8763")
+                        .url("/")
                         .description("API Gateway")));
     }
 }
