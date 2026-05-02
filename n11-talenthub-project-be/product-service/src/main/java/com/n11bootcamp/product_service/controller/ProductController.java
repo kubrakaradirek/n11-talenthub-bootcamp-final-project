@@ -2,7 +2,6 @@ package com.n11bootcamp.product_service.controller;
 
 import com.n11bootcamp.product_service.entity.Product;
 import com.n11bootcamp.product_service.service.ProductService;
-import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
@@ -26,8 +25,7 @@ public class ProductController {
     private final ProductService productService;
 
     @PostMapping
-    @Hidden
-    @Operation(summary = "Create product")
+    @Operation(summary = "Create product", description = "Yeni bir urun ekler.")
     public ResponseEntity<Product> createProduct(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(required = true)
             @RequestBody Product product) {
@@ -35,8 +33,7 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
-    @Hidden
-    @Operation(summary = "Update product")
+    @Operation(summary = "Update product", description = "Secilen urunun bilgilerini gunceller.")
     public ResponseEntity<Product> updateProduct(
             @Parameter(required = true) @PathVariable Long id,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(required = true)
@@ -45,8 +42,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/{id}")
-    @Hidden
-    @Operation(summary = "Delete product")
+    @Operation(summary = "Delete product", description = "Secilen urunu siler.")
     public ResponseEntity<String> deleteProduct(@Parameter(required = true) @PathVariable Long id) {
         productService.deleteProduct(id);
         return ResponseEntity.ok("Product deleted successfully.");

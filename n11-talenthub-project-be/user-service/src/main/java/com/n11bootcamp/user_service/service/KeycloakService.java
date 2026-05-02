@@ -46,8 +46,11 @@ public class KeycloakService {
         UserRepresentation user = new UserRepresentation();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
+        user.setFirstName(request.getUsername());
+        user.setLastName("Customer");
         user.setEnabled(true);
         user.setEmailVerified(true);
+        user.setRequiredActions(Collections.emptyList());
 
         // Kullanıcıyı Keycloak'a kaydet
         Response response = keycloak.realm(realm).users().create(user);
