@@ -61,6 +61,7 @@ public class SecurityConfig {
                         .pathMatchers(HttpMethod.GET, "/api/products").permitAll()
                         .pathMatchers(HttpMethod.GET, "/api/products/**").permitAll()
                         .pathMatchers(HttpMethod.GET, "/api/stock/**").permitAll()
+                        .pathMatchers("/api/shopping-cart/**").permitAll()
                         .pathMatchers("/api/payments/**", "/api/payments").authenticated()
                         .anyExchange().authenticated()
                 )
