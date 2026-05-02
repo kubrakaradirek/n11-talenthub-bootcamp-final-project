@@ -27,11 +27,11 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/orders")
-@CrossOrigin(
+/*@CrossOrigin(
         origins = {"http://localhost:8763", "http://localhost:5173", "http://localhost:3000"},
         allowedHeaders = "*",
         methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS}
-)
+)*/
 @Tag(name = "Orders", description = "Authenticated order operations")
 @SecurityRequirement(name = "bearerAuth")
 public class OrderController {
