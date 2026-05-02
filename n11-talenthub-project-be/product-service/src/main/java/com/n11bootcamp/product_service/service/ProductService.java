@@ -1,5 +1,6 @@
 package com.n11bootcamp.product_service.service;
 
+import com.n11bootcamp.product_service.dto.ProductRequest;
 import com.n11bootcamp.product_service.entity.Product;
 import com.n11bootcamp.product_service.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,11 +31,21 @@ public class ProductService {
         return productRepository.findAll();
     }
 
-    public Product createProduct(Product product) {
+    public Product createProduct(ProductRequest productRequest) {
+        Product product = Product.builder()
+                .title(productRequest.getTitle())
+                .description(productRequest.getDescription())
+                .price(productRequest.getPrice())
+                .img(productRequest.getImg())
+                .brand(productRequest.getBrand())
+                .color(productRequest.getColor())
+                .category(productRequest.getCategory())
+                .build();
+
         return productRepository.save(product);
     }
 
-    public Product updateProduct(Long id, Product updatedProduct) {
+    public Product updateProduct(Long id, ProductRequest updatedProduct) {
         Product existingProduct = getProductById(id);
 
         existingProduct.setTitle(updatedProduct.getTitle());

@@ -1,5 +1,6 @@
 package com.n11bootcamp.product_service.controller;
 
+import com.n11bootcamp.product_service.dto.ProductRequest;
 import com.n11bootcamp.product_service.entity.Product;
 import com.n11bootcamp.product_service.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,8 +29,8 @@ public class ProductController {
     @Operation(summary = "Create product", description = "Yeni bir urun ekler.")
     public ResponseEntity<Product> createProduct(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(required = true)
-            @RequestBody Product product) {
-        return ResponseEntity.ok(productService.createProduct(product));
+            @RequestBody ProductRequest productRequest) {
+        return ResponseEntity.ok(productService.createProduct(productRequest));
     }
 
     @PutMapping("/{id}")
@@ -37,8 +38,8 @@ public class ProductController {
     public ResponseEntity<Product> updateProduct(
             @Parameter(required = true) @PathVariable Long id,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(required = true)
-            @RequestBody Product product) {
-        return ResponseEntity.ok(productService.updateProduct(id, product));
+            @RequestBody ProductRequest productRequest) {
+        return ResponseEntity.ok(productService.updateProduct(id, productRequest));
     }
 
     @DeleteMapping("/{id}")
