@@ -49,10 +49,16 @@ const CartPage = () => {
         }
 
         try {
-            const coupons = username
-                ? await getUnusedCouponsByUsername(username)
-                : await getUnusedCoupons(userId);
-            setActiveCoupons(Array.isArray(coupons) ? coupons : []);
+            const couponResults = await Promise.allSettled([
+                username ? getUnusedCouponsByUsername(username) : Promise.resolve([]),
+                userId ? getUnusedCoupons(userId) : Promise.resolve([]),
+            ]);
+            const coupons = couponResults
+                .filter((result) => result.status === 'fulfilled' && Array.isArray(result.value))
+                .flatMap((result) => result.value);
+            const uniqueCoupons = Array.from(new Map(coupons.map((coupon) => [coupon.id, coupon])).values());
+
+            setActiveCoupons(uniqueCoupons);
         } catch (error) {
             console.error("Aktif kuponlar yüklenemedi:", error);
             if (!userId) {
@@ -92,6 +98,9 @@ const CartPage = () => {
     const handlePaymentSuccess = async () => {
         await fetchCart();
         await fetchActiveCoupons();
+        setTimeout(fetchActiveCoupons, 2000);
+        setTimeout(fetchActiveCoupons, 5000);
+        setTimeout(fetchActiveCoupons, 9000);
     };
 
     const fetchCart = async () => {
