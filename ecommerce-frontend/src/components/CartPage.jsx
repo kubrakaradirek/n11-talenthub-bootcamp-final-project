@@ -46,7 +46,7 @@ const CartPage = () => {
         }
     }, [activeCoupons, couponCode]);
 
-    const fetchActiveCoupons = async () => {
+    /*const fetchActiveCoupons = async () => {
         const userId = getCurrentUserId();
         const username = localStorage.getItem("kuba_username");
 
@@ -86,7 +86,47 @@ const CartPage = () => {
             setCouponsLoading(false);
         }
     };
+*/
+    const fetchActiveCoupons = async () => {
+        const userId = getCurrentUserId();
+        const username = localStorage.getItem("kuba_username");
 
+        if (!userId && !username) {
+            setActiveCoupons([]);
+            return;
+        }
+
+        setCouponsLoading(true);
+
+        try {
+            const couponResults = await Promise.allSettled([
+                username ? getUnusedCouponsByUsername(username) : Promise.resolve([]),
+                userId ? getUnusedCoupons(userId) : Promise.resolve([]),
+            ]);
+
+            const coupons = couponResults
+                .filter((result) => result.status === 'fulfilled' && result.value)
+                .flatMap((result) => {
+                    // ÖNEMLİ DÜZELTME: Gelen veri Axios objesiyse (.data) içinden al, değilse kendisini al
+                    const responseData = result.value.data || result.value;
+
+                    // Eğer gelen veri bir array ise döndür, değilse boş array döndür
+                    return Array.isArray(responseData) ? responseData : [];
+                });
+
+            // Gelen kuponları ID veya Koda göre tekilleştir
+            const uniqueCoupons = Array.from(new Map(coupons.map((coupon) => [coupon.id || coupon.code, coupon])).values());
+
+            console.log("Yakalanan Aktif Kuponlar:", uniqueCoupons); // Tarayıcı konsolundan kontrol etmen için
+            setActiveCoupons(uniqueCoupons);
+
+        } catch (error) {
+            console.error("Aktif kuponlar yüklenemedi:", error);
+            setActiveCoupons([]);
+        } finally {
+            setCouponsLoading(false);
+        }
+    };
     const renderActiveCoupons = () => (
         <div className="active-coupons-inline">
             <span className="active-coupons-title">Kuponlarım</span>
