@@ -24,7 +24,7 @@ public class ShoppingCardService {
     private final RestTemplate restTemplate;
     private final RabbitTemplate rabbitTemplate;
 
-    private static final String PRODUCT_SERVICE_URL = "http://PRODUCT-SERVICE/api/products/";
+    private static final String PRODUCT_SERVICE_URL = "http://product-service:8764/api/products/";
 
     // Sepeti getir, yoksa yeni oluştur
     public ShoppingCard getCart(String username) {
