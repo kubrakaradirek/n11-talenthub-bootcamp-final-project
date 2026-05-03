@@ -115,7 +115,7 @@ flowchart LR
 ### `payment-service` (port `8771`)
 - **Stack:** Spring Web, Iyzico Java SDK, OpenFeign (order-service'e), Spring Validation
 - **Sorumluluk:** Ödeme isteğini Iyzico Sandbox'a iletir, başarılı ödeme sonrası order-service'e siparişi oluşturmaya tetikler, başarısız ödemede frontend'e detaylı hata gönderir
-- **Geliştirme:** Iyzico SDK entegrasyonu doğrudan **Codex** ile yazıldı
+- **Geliştirme:** Iyzico SDK entegrasyonu **Codex** ile beraber yazıldı
 
 ---
 
@@ -158,22 +158,7 @@ flowchart LR
 
 ---
 
-## Bootcamp Gereksinim Karşılama
-
-Backend tarafında RESTful web servisleri tüm mikroservisler için RestController + DTO yapısıyla yazıldı. PostgreSQL üzerinde user, product, order ve stock servisleri için ayrı şemalar kullanıldı, **pagination eklendi** (product-service `Pageable` ile). Sepet işlemleri shopping-card-service üzerinden Redis'le yönetildi, sipariş yönetimi order-service + Saga state machine ile, ödeme entegrasyonu payment-service Iyzico Sandbox ile sağlandı. JWT auth Keycloak + Gateway resource server ile, dokümantasyon Springdoc + Gateway aggregation ile, loglama SLF4J + Logback ile yapıldı; ayrıca audit consumer log'u RabbitMQ tarafında çalışıyor. Unit ve integration testleri `*ServiceTest`, `*ControllerTest`, `*RepositoryTest`, `*IntegrationTest` sınıflarında yer alıyor.
-
-### Frontend gereksinimleri
-
-| Gereksinim | Karşılayan |
-|---|---|
-| Ürün listeleme & detay | `ProductList`, `ProductDetail` componentleri |
-| Hooks ile state | `useState`, `useEffect`, `useNavigate` |
-| Pagination UI | Ürün listesi sayfalama |
-| Sepet UI | `CartPage` + `CartItem` |
-| API entegrasyonu | `services/apiClient.js` Axios + interceptor |
-| Hata yönetimi | SweetAlert2 toast'ları + try/catch + loading state |
-
-### Nice-to-have: Kupon Sistemi
+## Nice-to-have: Kupon Sistemi
 
 Kullanıcı ilk 10.000 TL üzeri alışveriş yapıp sipariş verirse bir sonraki siparişine **%20 kupon** olur. Tek kullanımlık `KUBA20-XXXXXX` formatında üretilir.
 
@@ -183,9 +168,11 @@ Kullanıcı ilk 10.000 TL üzeri alışveriş yapıp sipariş verirse bir sonrak
 
 ---
 
-## Frontend Geliştirme Notu
+## Notlar
 
-Frontend tarafının ilk iskeleti, component yapısı, CSS tasarımı ve SweetAlert2 entegrasyonları **OpenAI Codex** desteğiyle hazırlandı. Backend ile entegrasyon kısımları (Axios interceptor mantığı, `kuba_token` yönetimi, ödeme formundan payment-service'e giden istek yapısı, kupon listesi çağrıları) tarafımdan elle kontrol edildi ve test edilerek production'a hazır hale getirildi.
+- Frontend OpenAI Codex ile yazıldı, entegrasyonlarında ben kontrol ederek adım adım gittim.
+- Payment-service Iyzico SDK entegrasyonu da aynı şekilde Codex ile beraber yapıldı.
+- Docker + Jib (Dockerfile'sız image) yaklaşımı OpenAI Codex ile desteklenmiştir.
 
 ---
 
@@ -197,8 +184,6 @@ Frontend tarafının ilk iskeleti, component yapısı, CSS tasarımı ve SweetAl
 | Payment-service Iyzico SDK entegrasyonu | OpenAI Codex + Anthropic Claude |
 | RabbitMQ saga, exchange, queue, binding düzenlemeleri | Anthropic Claude |
 | Docker + Jib (Dockerfile'sız image) yaklaşımı | OpenAI Codex |
-
-Gözden geçirilerek geliştirildi.
 
 ---
 
@@ -227,12 +212,6 @@ cd ecommerce-frontend
 npm install
 npm run dev
 ```
-
----
-
-## Referans
-
-[selimsahindev/n11-talenthub-bootcamp-final-case](https://github.com/selimsahindev/n11-talenthub-bootcamp-final-case)
 
 ---
 
