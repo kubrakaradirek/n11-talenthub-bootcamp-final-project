@@ -24,11 +24,23 @@ public class SecurityConfig {
     @Bean
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration corsConfig = new CorsConfiguration();
-        // React dev ortamı
-        corsConfig.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://92.249.61.16"));
+        // Lokal React dev (Vite/CRA) + VPS uzerinde calisan frontend icin tum
+        // makul varyantlari aciyoruz. Yildiz pattern kullanmak yerine acikca
+        // listeliyoruz cunku allowCredentials=true iken "*" calismaz.
+        corsConfig.setAllowedOrigins(Arrays.asList(
+                "http://localhost:5173",
+                "http://localhost:3000",
+                "http://localhost:8763",
+                "http://92.249.61.16",
+                "http://92.249.61.16:80",
+                "http://92.249.61.16:5173",
+                "http://92.249.61.16:3000",
+                "http://92.249.61.16:8763"
+        ));
         corsConfig.setMaxAge(3600L);
-        corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         corsConfig.setAllowedHeaders(Arrays.asList("*"));
+        corsConfig.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
         corsConfig.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -60,7 +72,7 @@ public class SecurityConfig {
                         .pathMatchers("/api/user/signup", "/api/user/signin").permitAll()
                         .pathMatchers(HttpMethod.GET, "/api/products").permitAll()
                         .pathMatchers(HttpMethod.GET, "/api/products/**").permitAll()
-                        .pathMatchers(HttpMethod.GET, "/api/stock/**").permitAll()
+                        .pathMatchers(HttpMethod.GET, "/api/stock/**", "/api/stocks/**").permitAll()
                         .pathMatchers(HttpMethod.GET, "/api/orders/coupons/**").permitAll()
                         .pathMatchers("/api/shopping-cart/**").permitAll()
                         .pathMatchers("/api/payments/**", "/api/payments").authenticated()
