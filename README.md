@@ -1,653 +1,350 @@
-# KubaShop - Fullstack Mikroservis E-Ticaret Projesi
+# KubaShop — Fullstack Mikroservis E-Ticaret Projesi
 
-KubaShop, Spring Boot mikroservis mimarisi ve React.js ile geliştirilen fullstack bir e-ticaret uygulamasıdır. Projede ürün listeleme, ürün detay görüntüleme, sepet yönetimi, sipariş oluşturma, stok yönetimi, Iyzico Sandbox ödeme entegrasyonu, JWT tabanlı güvenlik, Swagger dokümantasyonu, testler ve Docker/Jib tabanlı container yapısı yer almaktadır.
+KubaShop, **Spring Boot mikroservis mimarisi** ve **React.js (Vite)** ile geliştirilmiş fullstack bir e-ticaret uygulamasıdır. Ürün kataloğu, sepet yönetimi, stok kontrolü, sipariş akışı, **Iyzico Sandbox** ödeme entegrasyonu, **Keycloak/JWT** tabanlı güvenlik, **RabbitMQ** üzerinden Saga pattern, **Redis** sepet cache'i, **Eureka** servis keşfi, **Spring Cloud Gateway** ve **Spring Cloud Config Server** içeren bir referans projedir.
 
-Bu proje, n11 TalentHub Bootcamp bitirme projesi kapsamında hazırlanmıştır.
+Bu proje, **n11 TalentHub Bootcamp** bitirme projesi kapsamında hazırlanmış ve canlı sunucuya deploy edilmiştir.
+
+---
+
+## Canlı Erişim
+
+Proje şu an gerçek bir VPS üzerinde çalışıyor. Aşağıdaki linklerden uçtan uca test edebilirsin:
+
+| Servis | URL | Açıklama |
+|---|---|---|
+| Frontend (KubaShop) | http://92.249.61.16 | React + Vite arayüz, ürün kataloğu, sepet, ödeme formu |
+| Swagger UI (Aggregated) | http://92.249.61.16:8763/swagger-ui/index.html | Tüm mikroservislerin OpenAPI dokümantasyonu, gateway üzerinden |
+| Eureka Discovery | http://92.249.61.16:8761 | Servislerin canlı kayıt panosu |
+| Keycloak | http://92.249.61.16:8081 | Kimlik ve yetkilendirme yönetimi (`microservice-realm`) |
+| RabbitMQ Management | http://92.249.61.16:15674 | Exchange, queue, binding, mesaj akışı paneli |
+
+---
 
 ## Proje Özeti
 
-Kullanıcı, frontend üzerinden ürünleri listeler, ürün detayına gider, ürünleri sepete ekler, sepetindeki adetleri günceller ve ödeme formu üzerinden siparişini tamamlar. Ödeme akışı API Gateway üzerinden Payment Service'e gider. Payment Service, Iyzico Sandbox ile ödeme sürecini yürütür ve başarılı ödeme sonrası Order Service'e senkron olarak sipariş oluşturma isteği gönderir. Order Service siparişi kaydeder, stok akışını tetikler ve başarılı siparişten sonra sepet temizleme işlemini başlatır.
+Kullanıcı, frontend üzerinden Keycloak hesabıyla giriş yapar (signup/signin akışı `user-service` ile köprülenmiştir). Ürün listesi `product-service`'ten gelir; bir ürünü sepete eklediğinde `shopping-card-service` Redis üzerinde kullanıcının sepetini günceller ve aynı zamanda **`shopping_cart_queue`'ya bir audit mesajı** publish eder (RabbitMQ kullanımının **canlı kanıtı**, iletilen mesajlar `CartAuditConsumer` tarafından tüketilip log'a yazılır).
 
-Ek özellik olarak, kullanıcının ilk kez 10.000 TL ve üzeri alışverişini tamamlaması durumunda tek kullanımlık %20 indirim kuponu kazanması sağlanmıştır. Kupon sistemi hem backend hem frontend tarafında çalışacak şekilde geliştirilmiştir.
+Sepet onayında ödeme formu doldurulur, **`payment-service`** Iyzico Sandbox ile ödemeyi gerçekleştirir, başarılı ödeme sonrası **`order-service`**'e sipariş oluşturma isteği iletilir. `order-service` siparişi kaydeder ve **Saga pattern** ile RabbitMQ üzerinden `stock-service`'ten stok rezervasyonu ister. Stok rezerve edilirse sipariş `COMPLETED`, edilmezse `CANCELLED` olur. Başarılı siparişten sonra sepet otomatik temizlenir, kullanıcı sipariş tutarı **10.000 TL üzerindeyse ilk kez aldığı için %20 indirim kuponu** kazanır.
 
-## Kullanılan Teknolojiler
+---
 
-### Backend
+## Ekran Görüntüleri
 
-- Java 21
-- Spring Boot 3.5.x
-- Spring Web
-- Spring Data JPA
-- Spring Validation
-- Spring Security
-- Spring OAuth2 Resource Server
-- Spring Cloud Config Server
-- Spring Cloud Gateway
-- Spring Cloud Netflix Eureka
-- Spring Cloud OpenFeign
-- Spring AMQP / RabbitMQ
-- Redis
-- PostgreSQL
-- Keycloak
-- Iyzico Java SDK
-- Swagger / OpenAPI / Springdoc
-- JUnit 5
-- Mockito
-- Maven
-- Jib
-- Docker / Docker Compose
+> Aşağıdaki yer tutucu görselleri kendi `docs/screenshots/` klasörüne ekleyip linkleri güncelleyebilirsin.
 
-### Frontend
+| Sayfa | Açıklama |
+|---|---|
+| Ana sayfa kampanya banner'ı | İlk 10.000 TL+ alışveriş için %20 kupon vurgusu |
+| Ürün listeleme | Çamaşır makinesi, bulaşık makinesi, monitör, robot süpürge — pagination ile |
+| Ürün detay | Marka, kategori, renk, kargo bilgisi, sepete ekle |
+| Sepet sayfası | Adet artırma/azaltma, kupon kodu kutusu, "Aktif Kuponlarım" bölümü |
+| Ödeme formu | Ad, soyad, TCKN, adres, kart bilgileri, Iyzico/Visa/MasterCard/Troy |
 
-- React 19
-- Vite
-- React Router
-- Axios
-- React Hooks: `useState`, `useEffect`
-- SweetAlert2
-- Jest
-- React Testing Library
-- CSS ile özel lüks tema tasarımı
-
-### DevOps ve Dokümantasyon
-
-- Docker Compose ile servis orkestrasyonu
-- Jib ile Dockerfile yazmadan image oluşturma
-- Swagger UI ile gateway üzerinden API dokümantasyonu
-- GitHub Actions için CI/CD pipeline mantığı
-- Jenkins pipeline karşılaştırması
-- AWS Elastic Beanstalk + RDS deployment mimarisi bilgisi
-- Slack webhook ile deploy bildirimi yaklaşımı
+---
 
 ## Mimari
 
 ```mermaid
 flowchart LR
-    Frontend["React Frontend\nlocalhost:5173"] --> Gateway["API Gateway\n:8763"]
+    FE["React Frontend<br/>(Vite, Axios)"] --> GW["API Gateway<br/>:8763"]
 
-    Gateway --> User["User Service\n:8766"]
-    Gateway --> Product["Product Service\n:8764"]
-    Gateway --> Cart["Shopping Cart Service\n:8765"]
-    Gateway --> Stock["Stock Service\n:8769"]
-    Gateway --> Order["Order Service\n:8770"]
-    Gateway --> Payment["Payment Service\n:8771"]
+    GW --> USR["user-service<br/>:8766"]
+    GW --> PRD["product-service<br/>:8764"]
+    GW --> CRT["shopping-card-service<br/>:8765"]
+    GW --> STK["stock-service<br/>:8769"]
+    GW --> ORD["order-service<br/>:8770"]
+    GW --> PAY["payment-service<br/>:8771"]
 
-    Payment --> Iyzico["Iyzico Sandbox"]
-    Payment --> Order
-    Order --> Stock
-    Order --> Cart
+    USR --> KC["Keycloak<br/>:8081"]
+    GW --> KC
 
-    User --> Keycloak["Keycloak\n:8081"]
-    Cart --> Redis["Redis\n:6379"]
-    Order --> RabbitMQ["RabbitMQ\n:5674 / 15674"]
-    Stock --> RabbitMQ
+    CRT --> RDS["Redis<br/>:6379"]
+    CRT -. publish .-> MQ["RabbitMQ<br/>:5672 / mgmt :15672"]
+    MQ -. consume .-> CRT
 
-    User --> PostgreSQL["PostgreSQL\nhost port 5434"]
-    Product --> PostgreSQL
-    Stock --> PostgreSQL
-    Order --> PostgreSQL
+    ORD -. publish reserve .-> MQ
+    MQ -. consume .-> STK
+    STK -. publish reserved/rejected .-> MQ
+    MQ -. consume .-> ORD
 
-    Config["Config Server\n:8888"] --> Gateway
-    Config --> User
-    Config --> Product
-    Config --> Cart
-    Config --> Stock
-    Config --> Order
-    Config --> Payment
+    PAY --> IYZ["Iyzico Sandbox"]
+    PAY --> ORD
+    ORD --> CRT
 
-    Discovery["Discovery Server / Eureka\n:8761"] --> Gateway
-    Discovery --> Config
-    Discovery --> User
-    Discovery --> Product
-    Discovery --> Cart
-    Discovery --> Stock
-    Discovery --> Order
-    Discovery --> Payment
+    USR --> DB[("PostgreSQL")]
+    PRD --> DB
+    ORD --> DB
+    STK --> DB
+
+    GW --> EUR["Eureka<br/>:8761"]
+    USR & PRD & CRT & STK & ORD & PAY --> EUR
+    USR & PRD & CRT & STK & ORD & PAY --> CFG["Config Server<br/>:8888"]
 ```
 
-## Proje Dizini
+---
 
-```text
-n11-talenthub-bootcamp-final-project
-├── docker-compose.yml
-├── db-seed-products-stock.sql
-├── ecommerce-frontend
-│   ├── src
-│   │   ├── components
-│   │   ├── services
-│   │   ├── test
-│   │   ├── App.jsx
-│   │   └── main.jsx
-│   └── package.json
-└── n11-talenthub-project-be
-    ├── api-gateway
-    ├── config-server
-    ├── discovery-server
-    ├── user-service
-    ├── product-service
-    ├── shopping-card-service
-    ├── stock-service
-    ├── order-service
-    └── payment-service
+## Servisler ve Sorumlulukları
+
+Her servis tek başına çalışabilir, kendi veritabanı şemasıyla yaşar, gateway üzerinden dış dünyaya çıkar.
+
+### `api-gateway` (port `8763`)
+- **Stack:** Spring Cloud Gateway (WebFlux), Spring Security OAuth2 Resource Server (Keycloak JWT)
+- **Sorumluluk:** Tek giriş kapısı, JWT doğrulama, route'lama, **CORS** yönetimi (tek noktadan), Swagger aggregation
+- **Pattern:** API Gateway, Single Sign-On Token Validation, Centralized CORS
+
+### `discovery-server` (port `8761`)
+- **Stack:** Spring Cloud Netflix Eureka Server
+- **Sorumluluk:** Tüm mikroservislerin canlı keşfi, `lb://SERVICE-NAME` çözümü
+- **Pattern:** Service Discovery
+
+### `config-server` (port `8888`)
+- **Stack:** Spring Cloud Config Server
+- **Sorumluluk:** Tüm servislerin `application.properties`'ini merkezden yönetmek
+- **Pattern:** Externalized Configuration
+
+### `user-service` (port `8766`)
+- **Stack:** Spring Web, Spring Data JPA, PostgreSQL, **Keycloak Admin Client**
+- **Sorumluluk:** Signup ve signin akışını yönetir, Keycloak'ta kullanıcı oluşturur, lokal DB'de profil tutar, JWT token döner
+- **Pattern:** Adapter (Keycloak ↔ Application), DTO Layer, Repository
+
+### `product-service` (port `8764`)
+- **Stack:** Spring Web, Spring Data JPA, PostgreSQL, Pagination
+- **Sorumluluk:** Ürün CRUD (read-only public), kategori, marka, fiyat
+- **Pattern:** Repository, Specification, Pagination
+
+### `shopping-card-service` (port `8765`)
+- **Stack:** Spring Web, **Spring Data Redis**, RabbitMQ
+- **Sorumluluk:** Kullanıcının sepetini Redis'te tutar (anahtar = username), sepet işlemleri (ekle/güncelle/sil/temizle), her ekleme **`shopping_cart_queue`'ya audit mesajı publish** eder
+- **Pattern:** Cache-Aside (Redis), Event Publishing, Audit Log Consumer
+- **Queue tüketimi:** `CartAuditConsumer` → `shopping_cart_queue` → loglama
+
+### `stock-service` (port `8769`)
+- **Stack:** Spring Web, Spring Data JPA, PostgreSQL, RabbitMQ
+- **Sorumluluk:** Ürün stoklarını yönetir, Saga'da rezerve/commit/release işlemlerini yapar, gerekirse rejection event yayınlar
+- **Pattern:** Saga (Choreography), Optimistic Locking, Event Listener
+- **DLX/DLQ:** `stock.events.dlx` + `stock.reserve.requested.dlq` ile başarısız mesajlar deadletter'a düşer
+
+### `order-service` (port `8770`)
+- **Stack:** Spring Web, Spring Data JPA, PostgreSQL, RabbitMQ, **OpenFeign** (stock-service ve shopping-card-service'e sync çağrılar için)
+- **Sorumluluk:** Sipariş oluşturma (Saga başlatıcısı), kupon üretimi, sipariş statü makinesi, sipariş geçmişi
+- **Pattern:** Saga Orchestrator (mesaj tabanlı), State Machine (`CREATED → STOCK_RESERVED → COMPLETED` veya `CANCELLED`), Outbox-benzeri event publishing
+- **Kupon kuralı (nice-to-have):** Toplam tutar > 10.000 TL ve kullanıcının önceden hiç kuponu yoksa, sipariş `COMPLETED`'e geçtiği anda `KUBA20-XXXXXX` formatında **tek kullanımlık %20 kupon** üretilir ve `coupons` tablosuna kaydedilir. Frontend'in sepet sayfasındaki "Kuponlarım" bölümü `/api/orders/coupons/user/{userId}` ile bunları çeker.
+
+### `payment-service` (port `8771`)
+- **Stack:** Spring Web, **Iyzico Java SDK**, OpenFeign (order-service'e), Spring Validation
+- **Sorumluluk:** Ödeme isteğini Iyzico Sandbox'a iletir, başarılı ödeme sonrası order-service'e siparişi oluşturmaya tetikler, başarısız ödemede frontend'e detaylı hata gönderir
+- **Pattern:** Anti-Corruption Layer (Iyzico ↔ KubaShop modeli), Idempotency Key, External Payment Gateway
+
+---
+
+## Saga Pattern (Sipariş ↔ Stok)
+
+Sipariş ve stok arasındaki tutarlılık **mesaj tabanlı choreography** ile sağlanır:
+
+```mermaid
+sequenceDiagram
+    participant FE as Frontend
+    participant Pay as payment-service
+    participant Ord as order-service
+    participant MQ as RabbitMQ<br/>(stock.events.exchange)
+    participant Stk as stock-service
+    participant DB as PostgreSQL
+
+    FE->>Pay: POST /api/payments
+    Pay->>Pay: Iyzico Sandbox
+    Pay->>Ord: createOrder (Feign)
+    Ord->>DB: Order(status=CREATED)
+    Ord->>MQ: publish "order.stock.reserve.requested"
+    MQ->>Stk: deliver to stock.reserve.requested.queue
+    Stk->>Stk: stock.reserve(items)
+    alt Stok yeterli
+        Stk->>MQ: publish "order.stock.reserved"
+        MQ->>Ord: deliver to order.stock.reserved.queue
+        Ord->>DB: status=STOCK_RESERVED → COMPLETED
+        Ord->>Ord: %20 kupon üret (eligible ise)
+        Ord->>FE: cart.clear()
+    else Stok yetersiz
+        Stk->>MQ: publish "order.stock.rejected"
+        MQ->>Ord: deliver to order.stock.rejected.queue
+        Ord->>DB: status=CANCELLED
+    end
 ```
 
-## Mikroservisler
+**Routing tablosu:**
+
+| Yön | Exchange | Routing Key | Queue | Tüketen |
+|---|---|---|---|---|
+| Order → Stock | `stock.events.exchange` | `order.stock.reserve.requested` | `stock.reserve.requested.queue` | stock-service |
+| Stock → Order (success) | `stock.events.exchange` | `order.stock.reserved` | `order.stock.reserved.queue` | order-service |
+| Stock → Order (fail) | `stock.events.exchange` | `order.stock.rejected` | `order.stock.rejected.queue` | order-service |
+| Cart audit | (default) | `shopping_cart_queue` | `shopping_cart_queue` | shopping-card-service |
+
+---
+
+## Güvenlik Modeli
+
+- **Keycloak realm:** `microservice-realm`
+- **Public endpoint'ler (gateway'de `permitAll`):**
+  `/api/user/signup`, `/api/user/signin`, `/api/products/**` (GET), `/api/stock/**` (GET), `/api/orders/coupons/**` (GET), `/api/shopping-cart/**`, Swagger
+- **Korumalı endpoint'ler:**
+  `/api/orders/**` (POST), `/api/payments/**` — JWT ister
+- **JWT issuer & JWK:** `http://keycloak:8080/realms/microservice-realm/...` — gateway resource server olarak doğrular
+- **Frontend Token:** `localStorage.kuba_token` üzerinden Axios interceptor ile her isteğe `Authorization: Bearer ...` ekler
+
+---
+
+## Kullanılan Teknolojiler
+
+### Backend
+- Java **21**, Spring Boot **3.5.x**
+- Spring Web, Data JPA, Validation, Security, OAuth2 Resource Server
+- Spring Cloud: Gateway (WebFlux), Config Server, Netflix Eureka, OpenFeign
+- Spring AMQP / RabbitMQ
+- Redis (Spring Data Redis, Lettuce)
+- PostgreSQL 15
+- Keycloak 25 (`microservice-realm`)
+- Iyzico Java SDK (Sandbox)
+- Springdoc OpenAPI 2.8.16
+- JUnit 5, Mockito, Spring Boot Test
+- Maven, Spring Boot Buildpack (Cloud Native Buildpacks via `spring-boot:build-image`)
+- Docker, Docker Compose
+
+### Frontend
+- React **19**, Vite 8
+- React Router, Axios (interceptor + skipAuth flag)
+- React Hooks: `useState`, `useEffect`
+- SweetAlert2 (modal & toast)
+- Jest + React Testing Library
+- Özel CSS tema (lacivert + sarı vurgu, "lüks alışveriş" hissi)
+
+### DevOps
+- **Docker Compose** ile tek komutla 12 container ayağa kalkar (postgres, rabbit, redis, keycloak, eureka, config, gateway + 6 servis)
+- **Spring Boot Buildpack / Jib** ile **Dockerfile yazmadan** image üretimi
+- Spring Cloud Config ile environment-based configuration
+- VPS (Ubuntu 22.04) üzerinde production deployment
+- RabbitMQ Management UI ile canlı saga izleme
+
+---
+
+## Bootcamp Gereksinim Karşılama Tablosu
+
+### Backend gereksinimleri
+
+| Gereksinim | Karşılayan |
+|---|---|
+| RESTful web servisi | Tüm mikroservisler (RestController + DTO) |
+| PostgreSQL | user, product, order, stock servislerinde ayrı şemalar |
+| Pagination | `product-service` `Pageable` ile |
+| Sepet işlemleri | `shopping-card-service` Redis backend |
+| Sipariş yönetimi | `order-service` + Saga state machine |
+| Ödeme entegrasyonu | `payment-service` Iyzico Sandbox |
+| JWT Auth | Keycloak + Gateway resource server |
+| Unit + Integration test | `*ServiceTest`, `*ControllerTest`, `*RepositoryTest`, `*IntegrationTest` |
+| Swagger | Springdoc + Gateway aggregation (`/swagger-ui.html`) |
+| Loglama | SLF4J + Logback (her servis), audit consumer log'u |
+
+### Frontend gereksinimleri
+
+| Gereksinim | Karşılayan |
+|---|---|
+| Ürün listeleme & detay | `ProductList`, `ProductDetail` componentleri |
+| Hooks ile state | `useState`, `useEffect`, `useNavigate` |
+| Pagination UI | Ürün listesi sayfalama |
+| Sepet UI | `CartPage` + `CartItem` |
+| API entegrasyonu | `services/apiClient.js` Axios + interceptor |
+| Hata yönetimi | SweetAlert2 toast'ları + try/catch + loading state |
+
+### DevOps gereksinimleri
+
+| Gereksinim | Karşılayan |
+|---|---|
+| Docker | `docker-compose.yml` ile tüm servisler container'da |
+| Jib / Buildpack | `mvn spring-boot:build-image` Dockerfile'sız image |
+| CI/CD | GitHub Actions pipeline iskeleti, build-test-image-deploy mantığı |
+| Jenkins karşılaştırması | README'de pipeline mantığı + alternatif yaklaşım |
+| Cloud deployment | VPS (Ubuntu) üzerinde production deploy; AWS Elastic Beanstalk + RDS yaklaşımı dokümante |
+| Monitoring | RabbitMQ Management UI; Slack webhook hook'u entegre edilebilir |
+
+### Nice-to-have: Kupon Sistemi
+
+Bootcamp gereksinimlerinin üzerine eklenen özelliktir. Mantık:
+
+1. Kullanıcı ilk kez **toplam ≥ 10.000 TL** olan bir siparişi tamamladığında
+2. Order-service `COMPLETED` statüsüne geçişte tetiklenir
+3. Tek kullanımlık `KUBA20-XXXXXX` formatında **%20 indirim kodu** üretilir
+4. `coupons` tablosuna `userId`, `code`, `used=false` ile yazılır
+5. Frontend `CartPage`'in "Aktif Kuponlarım" bölümü `/api/orders/coupons/user/{userId}` ile listeyi getirir
+6. Kupon kullanıldığında `used=true` set edilir ve indirim ara toplama uygulanır
 
-### Config Server
+Bu özellik için iki ayrı GET endpoint sağlanmıştır (`/coupons/user/{userId}` ve `/coupons/username/{username}`) — token yenilenip `userId` belirsiz kaldığında bile kuponlar kaybolmasın diye.
 
-Merkezi konfigürasyon servisidir. Mikroservislerin port, database, Eureka, RabbitMQ, Redis, Keycloak ve Iyzico gibi ayarları `config-server/src/main/resources/config` altında tutulur.
+---
 
-Kullanılan teknolojiler:
+## Frontend Geliştirme Notu
 
-- Spring Cloud Config Server
-- Spring Cloud Eureka Client
-- Maven
-- Jib
+Frontend tarafının ilk iskeleti, component yapısı, CSS tasarımı ve SweetAlert2 entegrasyonları **OpenAI Codex** desteğiyle hazırlanmıştır. Backend ile entegrasyon kısımları (Axios interceptor mantığı, `kuba_token` yönetimi, ödeme formundan payment-service'e giden istek yapısı, kupon listesi çağrıları) tarafımdan elle kontrol edilmiş ve test edilerek production'a hazır hale getirilmiştir.
 
-Öne çıkan dosyalar:
+---
 
-- `api-gateway.properties`
-- `user-service.properties`
-- `product-service.properties`
-- `shopping-cart-service.properties`
-- `stock-service.properties`
-- `order-service.properties`
-- `payment-service.properties`
+## Yapay Zeka Yardımı Aldığım Noktalar
 
-### Discovery Server
+Şeffaflık adına projede aldığım AI desteklerini açıkça belirtiyorum:
 
-Eureka Server olarak çalışır. Mikroservisler kendilerini Eureka'ya register eder. API Gateway de servisleri bu kayıtlar üzerinden bulur.
+| Konu | AI Aracı | Katkı |
+|---|---|---|
+| Frontend component iskeletleri ve CSS | OpenAI Codex | Component üretimi, stil önerileri |
+| Payment-service Iyzico SDK entegrasyonu | OpenAI Codex + Anthropic Claude | SDK çağrı yapısı, hata yönetimi, idempotency |
+| RabbitMQ saga, exchange, queue, binding düzenlemeleri | Anthropic Claude | Routing key tutarlılığı, JSON converter, audit consumer ekleme |
+| CORS / Network Error debug ve canlı deploy | Anthropic Claude | API Gateway CORS tek noktadan yönetimi, OrderController @CrossOrigin temizliği, frontend `.env` VPS yönlendirmesi |
+| Logback `/workspace/logs` restart loop hatası | Anthropic Claude | `${LOG_DIR:-/tmp}` çözümü |
+| Docker + Jib (Dockerfile'sız image) yaklaşımı | OpenAI Codex | Buildpack komutları, image tagging |
 
-Kullanılan teknolojiler:
+Her AI önerisi tarafımdan **gözden geçirilmiş, test edilmiş ve gerekli değişiklikler yapılmıştır** — yani yapay zeka asistan olarak kullanılmış, "kopyala-yapıştır" yapılmamıştır.
 
-- Spring Cloud Netflix Eureka Server
-- Spring Boot
-- Jib
-
-Port:
-
-- `8761`
-
-### API Gateway
-
-Frontend'den gelen tüm isteklerin tek giriş noktasıdır. Gateway, istekleri ilgili mikroservislere yönlendirir. JWT doğrulaması, CORS ayarları ve Swagger aggregation burada yönetilir.
-
-Kullanılan teknolojiler:
-
-- Spring Cloud Gateway
-- Spring WebFlux
-- Spring Security
-- OAuth2 Resource Server
-- Eureka Client
-- Load Balancer
-- Springdoc OpenAPI WebFlux UI
-
-Gateway route örnekleri:
-
-- `/api/products/**` -> Product Service
-- `/api/user/**` -> User Service
-- `/api/shopping-cart/**` -> Shopping Cart Service
-- `/api/stocks/**` -> Stock Service
-- `/api/orders/**` -> Order Service
-- `/api/payments/**` -> Payment Service
-
-Swagger:
-
-- `http://localhost:8763/swagger-ui/index.html`
-
-### User Service
-
-Kullanıcı kayıt ve giriş işlemlerini yönetir. Kullanıcı önce Keycloak üzerinde oluşturulur, ardından uygulamanın kendi PostgreSQL veritabanına kaydedilir. Giriş işleminde Keycloak üzerinden JWT token alınır.
-
-Kullanılan teknolojiler:
-
-- Spring Web
-- Spring Data JPA
-- PostgreSQL
-- Keycloak Admin Client
-- Apache HttpClient
-- Bean Validation
-- Spring Cloud Config Client
-- Eureka Client
-- Swagger/OpenAPI
-- JUnit / Mockito
-
-Temel endpointler:
-
-- `POST /api/user/signup`
-- `POST /api/user/signin`
-
-Veritabanı:
-
-- `user_db`
-
-### Product Service
-
-Ürün listeleme ve ürün detay işlemlerini yönetir. Ürün listeleme sayfasında pagination desteği vardır. Swagger tarafında aktif olarak frontend'in kullandığı GET endpointleri gösterilir.
-
-Kullanılan teknolojiler:
-
-- Spring Web
-- Spring Data JPA
-- PostgreSQL
-- Spring Security / OAuth2 Resource Server
-- Spring Cloud Config Client
-- Eureka Client
-- Swagger/OpenAPI
-- JUnit / Mockito
-- H2 test veritabanı
-
-Temel endpointler:
-
-- `GET /api/products?page=0&size=8`
-- `GET /api/products/{id}`
-
-Veritabanı:
-
-- `product_db`
-
-### Shopping Cart Service
-
-Kullanıcının sepetini yönetir. Ürün ekleme, adet güncelleme, ürün çıkarma ve sepet temizleme işlemlerini içerir. Sepet işlemlerinde Redis ve PostgreSQL kullanımı vardır. Sipariş tamamlandığında Order Service tarafından sepet temizleme akışı tetiklenir.
-
-Kullanılan teknolojiler:
-
-- Spring Web
-- Spring Data JPA
-- Redis
-- RabbitMQ
-- PostgreSQL
-- Eureka Client
-- Spring Cloud Config Client
-- Swagger/OpenAPI
-- JUnit / Mockito
-
-Temel endpointler:
-
-- `GET /api/shopping-cart/{username}`
-- `POST /api/shopping-cart/{username}/add`
-- `POST /api/shopping-cart/{username}/update`
-- `DELETE /api/shopping-cart/{username}/remove`
-- `DELETE /api/shopping-cart/{username}/clear`
-
-### Stock Service
-
-Ürün stoklarını yönetir. Sipariş akışı içinde stok rezerve etme, rezerve stoğu geri bırakma ve ödeme başarılı olunca rezerve stoğu kesinleştirme işlemleri bulunur.
-
-Kullanılan teknolojiler:
-
-- Spring Web
-- Spring Data JPA
-- PostgreSQL
-- RabbitMQ
-- Spring AMQP
-- OpenFeign
-- Eureka Client
-- Spring Cloud Config Client
-- Swagger/OpenAPI
-- JUnit / Mockito
-
-Temel endpointler:
-
-- `POST /api/stocks/reserve`
-- `POST /api/stocks/release`
-- `POST /api/stocks/commit`
-
-Veritabanı:
-
-- `stock_db`
-
-### Order Service
-
-Sipariş oluşturma, sipariş listeleme, sipariş detayları, kupon üretme ve kupon kullanma işlemlerini yönetir. Ödeme başarılı olduktan sonra Payment Service, Order Service'e senkron Feign çağrısı yapar. Order Service siparişi kaydeder, stok akışını yönetir ve sepet temizleme işlemini tetikler.
-
-Kullanılan teknolojiler:
-
-- Spring Web
-- Spring Data JPA
-- PostgreSQL
-- RabbitMQ
-- Spring AMQP
-- OpenFeign
-- Bean Validation
-- Global Exception Handler
-- SLF4J loglama
-- Swagger/OpenAPI
-- JUnit / Mockito
-
-Temel endpointler:
-
-- `POST /api/orders`
-- `GET /api/orders`
-- `GET /api/orders/{id}`
-- `GET /api/orders/user/{username}`
-- `GET /api/orders/coupons/preview`
-- `GET /api/orders/coupons/user/{userId}`
-
-Veritabanı:
-
-- `order_db`
-
-Nice-to-have özellik:
-
-- Kullanıcı ilk kez 10.000 TL ve üzeri alışveriş tamamladığında tek kullanımlık `%20` indirim kuponu kazanır.
-- Kupon sadece gerçek kullanıcı id'sine bağlıdır.
-- Kupon kullanıldığında `isUsed=true` yapılır ve tekrar kullanılamaz.
-
-### Payment Service
-
-Ödeme işlemlerini Iyzico Sandbox üzerinden yönetir. Ödeme isteğindeki kart, alıcı, fatura, teslimat adresi ve sepet kalemleri Iyzico formatına dönüştürülür. Ödeme başarılı olursa Order Service'e Feign Client ile sipariş oluşturma isteği gönderilir.
-
-Kullanılan teknolojiler:
-
-- Spring Web
-- Spring Validation
-- Iyzico Java SDK
-- OpenFeign
-- Spring Cloud Config Client
-- Eureka Client
-- Swagger/OpenAPI
-- SLF4J loglama
-- JUnit / Mockito
-
-Temel endpoint:
-
-- `POST /api/payments`
-
-Önemli detaylar:
-
-- Iyzico Sandbox ortamı kullanılmıştır.
-- Zorunlu Iyzico alanları ödeme öncesi kontrol edilir.
-- Kupon varsa ödeme öncesi Order Service üzerinden doğrulanır.
-- JWT token geçişi Feign tarafında korunacak şekilde yapılandırılmıştır.
-
-## Frontend
-
-React frontend, kullanıcıya ürün listeleme, ürün detay, sepet, ödeme, giriş ve kayıt ekranlarını sunar. API istekleri doğrudan mikroservislere değil, API Gateway'e gider.
-
-Kullanılan teknolojiler:
-
-- React
-- Vite
-- React Router
-- Axios
-- Jest
-- React Testing Library
-- CSS
-
-Öne çıkan ekranlar:
-
-- Ürün listeleme
-- Ürün detay
-- Sepet
-- Ödeme ve teslimat formu
-- Kullanıcı girişi
-- Kullanıcı kaydı
-
-Frontend özellikleri:
-
-- Ürün listeleme pagination UI
-- Loading state
-- Kullanıcı dostu hata mesajları
-- Sepette ürün adedi artırma/azaltma
-- Kupon kodu uygulama
-- Kullanıcının aktif kuponlarını sepet ekranında gösterme
-- Lüks siyah, sarı, kırmızı ve beyaz tema
-
-API base URL:
-
-```text
-http://localhost:8763
-```
-
-## Veritabanı Yapısı
-
-Projede PostgreSQL kullanılmıştır. Servisler kendi veritabanlarına bağlanacak şekilde ayrılmıştır.
-
-```text
-user-service    -> user_db
-product-service -> product_db
-stock-service   -> stock_db
-order-service   -> order_db
-```
-
-Mevcut geliştirme ortamında PostgreSQL container'ı host tarafında `5434` portundan kullanılmaktadır:
-
-```text
-host.docker.internal:5434
-```
-
-Örnek seed dosyası:
-
-```text
-db-seed-products-stock.sql
-```
-
-## Güvenlik
-
-Projede Keycloak tabanlı JWT authentication ve authorization kullanılmıştır.
-
-- Kullanıcı kayıt işlemi Keycloak ve user-service veritabanına birlikte yansır.
-- Giriş işleminde Keycloak üzerinden JWT token alınır.
-- API Gateway token doğrulamasını yapar.
-- Swagger üzerinden authorize olunarak güvenli endpointler test edilebilir.
-
-Keycloak:
-
-```text
-http://localhost:8081
-```
-
-Realm:
-
-```text
-microservice-realm
-```
-
-## Swagger / OpenAPI
-
-Tüm mikroservislerin API dokümantasyonu API Gateway üzerinden tek Swagger arayüzünde toplanmıştır.
-
-Swagger UI:
-
-```text
-http://localhost:8763/swagger-ui/index.html
-```
-
-Gateway üzerinden servis dokümanları:
-
-- Product Service
-- User Service
-- Shopping Cart Service
-- Stock Service
-- Order Service
-- Payment Service
-
-## Testler
-
-Backend tarafında JUnit 5 ve Mockito ile unit ve integration testler yazılmıştır. Frontend tarafında Jest ve React Testing Library kullanılmıştır.
-
-Backend test örnekleri:
-
-- Product controller/service/repository testleri
-- User controller/service/repository testleri
-- Shopping cart controller/service/repository testleri
-- Stock domain ve saga testleri
-- Payment service ve controller integration testleri
-- Coupon service unit testleri
-- Order coupon controller integration testleri
-
-Frontend test örnekleri:
-
-- Payment service testleri
-- Payment checkout component testleri
-
-Test komutları:
-
-```powershell
-cd n11-talenthub-project-be\order-service
-mvn test
-```
-
-```powershell
-cd ecommerce-frontend
-npm test
-```
-
-## Docker ve Jib
-
-Projede Dockerfile yazmadan image oluşturmak için Jib kullanılmıştır. Her Spring Boot servisinin `pom.xml` dosyasında Jib plugin yapılandırması vardır.
-
-Kullanılan base image:
-
-```text
-eclipse-temurin:21-jre-alpine
-```
-
-Image isimleri:
-
-```text
-config-server:latest
-discovery-server:latest
-api-gateway:latest
-user-service:latest
-product-service:latest
-shopping-card-service:latest
-stock-service:latest
-order-service:latest
-payment-service:latest
-```
-
-Örnek image build:
-
-```powershell
-cd n11-talenthub-project-be\user-service
-mvn clean compile jib:dockerBuild
-```
-
-Tüm servisler için aynı komut ilgili servis dizininde çalıştırılabilir.
-
-Docker Compose:
-
-```powershell
-docker compose up -d
-```
-
-Docker Compose içinde çalışan altyapılar:
-
-- RabbitMQ
-- Redis
-- Keycloak
-- Discovery Server
-- Config Server
-- API Gateway
-- User Service
-- Product Service
-- Shopping Cart Service
-- Stock Service
-- Order Service
-- Payment Service
-
-RabbitMQ Management:
-
-```text
-http://localhost:15674
-```
+---
 
 ## Lokal Çalıştırma
 
-### 1. Backend image'larını oluştur
+```bash
+# 1. Repo'yu klonla
+git clone https://github.com/<your-username>/n11-talenthub-bootcamp-final-project.git
+cd n11-talenthub-bootcamp-final-project
 
-Her servis dizininde:
+# 2. Backend image'larını üret (Maven + Buildpack)
+cd n11-talenthub-project-be
+for svc in discovery-server config-server api-gateway user-service product-service shopping-card-service stock-service order-service payment-service; do
+  cd $svc
+  mvn clean package -DskipTests
+  mvn spring-boot:build-image -DskipTests -Dspring-boot.build-image.imageName=$svc:latest
+  cd ..
+done
+cd ..
 
-```powershell
-mvn clean compile jib:dockerBuild
-```
-
-### 2. Container'ları başlat
-
-Proje kök dizininde:
-
-```powershell
+# 3. Tüm stack'i ayağa kaldır
 docker compose up -d
-```
+docker compose ps
 
-### 3. Frontend'i çalıştır
-
-```powershell
+# 4. Frontend
 cd ecommerce-frontend
 npm install
-npm run dev
+npm run dev    # http://localhost:5173
 ```
 
-Frontend:
+VPS deploy için `.env` dosyasında `VITE_API_BASE_URL`'i VPS IP:port'a yönlendirip `npm run build` yap, çıktıyı nginx ile servis et.
 
-```text
-http://localhost:5173
-```
+---
 
-API Gateway:
+## Referans Proje
 
-```text
-http://localhost:8763
-```
+Bootcamp kapsamında inceleme/karşılaştırma için bakılan referans proje:
+[selimsahindev/n11-talenthub-bootcamp-final-case](https://github.com/selimsahindev/n11-talenthub-bootcamp-final-case)
 
-## CI/CD ve Deployment Yaklaşımı
+---
 
-Proje Docker ve Jib ile deploy edilebilir yapıdadır. CI/CD tarafında hedeflenen akış:
+## Lisans ve İletişim
 
-```text
-GitHub push
--> GitHub Actions workflow
--> Backend testleri
--> Frontend testleri
--> Jib ile Docker image build
--> Image registry push
--> Sunucuya deploy
--> Slack deploy bildirimi
-```
+n11 TalentHub Bootcamp bitirme projesi olarak hazırlanmıştır, eğitim amaçlıdır.
 
-Jenkins ile karşılaştırma:
-
-- GitHub Actions, GitHub repository ile doğal entegre çalışır.
-- Jenkins daha esnek ve kurumsal senaryolarda güçlüdür ancak ayrıca sunucu kurulumu ister.
-- Bu proje için GitHub Actions daha pratik ve düşük maliyetli bir CI/CD çözümüdür.
-
-AWS deployment yaklaşımı:
-
-- Backend servisleri Elastic Beanstalk veya container tabanlı bir servis üzerinde çalıştırılabilir.
-- PostgreSQL için AWS RDS kullanılabilir.
-- Config, Discovery, Gateway ve mikroservisler container image olarak taşınabilir.
-- Maliyet oluşmaması için lokal/demo ortamında Docker Compose yapısı tercih edilmiştir.
-
-Monitoring yaklaşımı:
-
-- GitHub Actions deploy sonucunda Slack webhook ile başarılı/başarısız deploy bildirimi gönderilebilir.
-- Servis logları Docker logları üzerinden takip edilebilir.
-
-## Ödev Kriterleri Karşılığı
-
-| Kriter | Projedeki Karşılığı |
-| --- | --- |
-| RESTful API | Product, Cart, Order, Payment, User ve Stock servislerinde REST endpointleri |
-| PostgreSQL | User, Product, Stock ve Order verilerinin yönetimi |
-| Pagination | Product Service ürün listeleme endpointi |
-| Sepet işlemleri | Shopping Cart Service ve frontend sepet ekranı |
-| Sipariş yönetimi | Order Service |
-| Ödeme entegrasyonu | Payment Service + Iyzico Sandbox |
-| JWT güvenlik | Keycloak + API Gateway OAuth2 Resource Server |
-| Testler | JUnit, Mockito, Jest, React Testing Library |
-| Swagger/OpenAPI | Gateway üzerinden Swagger aggregation |
-| Loglama | Order ve Payment akışlarında SLF4J logları |
-| Docker | Docker Compose ile servislerin ayağa kaldırılması |
-| Jib | Dockerfile olmadan image üretimi |
-| CI/CD | GitHub Actions pipeline mantığı |
-| Jenkins karşılaştırması | README içinde pipeline yaklaşımı |
-| AWS Deployment | Elastic Beanstalk + RDS mimarisi açıklaması |
-| Monitoring | Slack webhook deploy bildirimi yaklaşımı |
-| Nice-to-have | Tek kullanımlık %20 indirim kuponu sistemi |
-
-## Geliştirici Notu
-
-Bu proje mikroservis mimarisini uçtan uca deneyimlemek için geliştirilmiştir. Amaç yalnızca CRUD işlemleri yapmak değil; servis keşfi, merkezi konfigürasyon, gateway routing, authentication, ödeme, stok, sepet, sipariş ve frontend entegrasyonunu birlikte çalışır hale getirmektir.
-
+**Geliştirici:** Kübra Karadirek
+**E-posta:** karadirekkubra96@gmail.com
+**Tarih:** Mayıs 2026
