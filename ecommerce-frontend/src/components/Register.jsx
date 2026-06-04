@@ -17,7 +17,7 @@ function Register() {
         setMessage({ text: 'Kayıt yapılıyor, lütfen bekleyin...', type: 'loading' });
 
         try {
-            const response = await apiClient.post('/api/user/signup', { username, email, password });
+            const response = await apiClient.post('/api/user/signup', { username, email, password }, { skipAuth: true });
 
             if (response.status >= 200 && response.status < 300) {
                 setMessage({ text: "Kayıt Başarılı! Giriş sayfasına yönlendiriliyorsunuz... 🚀", type: "success" });

@@ -21,8 +21,8 @@ public class ProductController {
 
     private final ProductService productService;
 
-    @GetMapping
-    @Operation(summary = "List products")
+    @GetMapping //method isteği get
+    @Operation(summary = "List products") //Swagger Openapi açıklaması
     public ResponseEntity<?> getAllProducts(
             @Parameter(required = false) @RequestParam(defaultValue = "0") int page,
             @Parameter(required = false) @RequestParam(defaultValue = "8") int size) {

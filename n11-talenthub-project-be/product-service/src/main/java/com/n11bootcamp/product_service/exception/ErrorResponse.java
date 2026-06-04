@@ -1,7 +1,7 @@
 package com.n11bootcamp.product_service.exception;
 
 public class ErrorResponse {
-
+// Tutarlı hata formatı için DTO. hataKodu (int) ve mesaj (String) içerir.
     private int hataKodu;
     private String mesaj;
 

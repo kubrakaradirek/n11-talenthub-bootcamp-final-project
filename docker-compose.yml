@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: 123
       POSTGRES_DB: postgres
     ports:
-      - "5432:5432"
+      - "5434:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./docker/postgres/init:/docker-entrypoint-initdb.d
@@ -61,9 +61,11 @@ services:
       KC_HTTP_ENABLED: "true"
       KC_HOSTNAME_STRICT: "false"
       KC_PROXY_HEADERS: xforwarded
-    command: start-dev
+    command: start-dev --import-realm
     ports:
       - "8081:8080"
+    volumes:
+      - ./docker/keycloak/import:/opt/keycloak/data/import
     networks:
       - n11-network
     restart: always

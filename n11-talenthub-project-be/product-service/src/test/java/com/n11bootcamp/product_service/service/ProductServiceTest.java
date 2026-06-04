@@ -42,6 +42,7 @@ class ProductServiceTest {
         sampleProduct.setPrice(100L);
     }
 
+    //findById Optional dönerse doğru Product döner mi?
     @Test
     void shouldGetProductByIdSuccess() {
         when(productRepository.findById(1L)).thenReturn(Optional.of(sampleProduct));

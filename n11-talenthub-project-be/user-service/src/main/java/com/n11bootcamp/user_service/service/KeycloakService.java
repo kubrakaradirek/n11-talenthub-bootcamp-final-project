@@ -67,6 +67,12 @@ public class KeycloakService {
 
             keycloak.realm(realm).users().get(userId).resetPassword(passwordCred);
 
+            user.setId(userId);
+            user.setFirstName(request.getUsername());
+            user.setLastName("Customer");
+            user.setRequiredActions(Collections.emptyList());
+            keycloak.realm(realm).users().get(userId).update(user);
+
             // "Customer" rolünü bul ve kullanıcıya ata
             RoleRepresentation customerRole = keycloak.realm(realm).roles().get("Customer").toRepresentation();
             keycloak.realm(realm).users().get(userId).roles().realmLevel().add(Collections.singletonList(customerRole));

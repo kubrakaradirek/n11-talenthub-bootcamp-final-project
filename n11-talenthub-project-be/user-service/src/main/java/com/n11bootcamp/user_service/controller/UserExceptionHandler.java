@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.stream.Collectors;
 
-@RestControllerAdvice
+@RestControllerAdvice //Tüm controllerın exceptionları merkezi yakalar
 public class UserExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

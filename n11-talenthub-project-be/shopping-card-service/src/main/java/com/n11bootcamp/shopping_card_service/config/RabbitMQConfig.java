@@ -18,7 +18,7 @@ public class RabbitMQConfig {
     @Bean
     public Queue cartQueue() {
         // true parametresi kuyrugun kalici (durable) olmasini saglar
-        return new Queue(CART_QUEUE, true);
+        return new Queue(CART_QUEUE, true); //rabbit mq açılsa bile kuyruk true ile silinmez
     }
 
     /**

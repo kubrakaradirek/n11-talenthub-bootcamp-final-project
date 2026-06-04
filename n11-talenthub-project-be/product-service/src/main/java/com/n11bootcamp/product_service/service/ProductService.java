@@ -14,8 +14,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
-@Slf4j
+@RequiredArgsConstructor //lombokun bize final propertyleri için otomatik const uygulamamızı sağlar
+@Slf4j //logger için
 public class ProductService {
 
     private final ProductRepository productRepository;
@@ -28,10 +28,14 @@ public class ProductService {
                 });
     }
 
+    //Tüm ürünler(controllerdan çağrılmıyor , ileride admin için)
+    //Bu metot product listesini pagination ile getiriyor. Page ve size değerlerini kontrol ediyor, geçersizse custom,
+    // exception fırlatıyor. Geçerliyse PageRequest oluşturup ürünleri id’ye göre descending sıralı şekilde repository’den çekiyor.
     public List<Product> getAllProducts() {
         return productRepository.findAll();
     }
 
+    //Ürünleri sayfalı şekilde getiriyor.
     public Page<Product> getPagedProducts(int page, int size) {
         if (page < 0 || size < 1) {
             throw new InvalidProductPageException("Gecersiz page veya size degeri.");

@@ -9,7 +9,7 @@ import java.util.List;
 
 @Configuration
 public class OpenApiConfig {
-
+// Swagger UI'ın API Gateway üzerinden çalışması için Server URL'i "/" set edilir.
     @Bean
     public OpenAPI openAPI() {
         return new OpenAPI()

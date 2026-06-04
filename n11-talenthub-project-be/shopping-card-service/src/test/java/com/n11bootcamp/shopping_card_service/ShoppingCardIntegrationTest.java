@@ -113,7 +113,7 @@ class ShoppingCardIntegrationTest {
     void shouldUpdateCartItemQuantity() throws Exception {
         // Önce Redis'e içinde 1 adet "101" ID'li ürün olan bir sepet kaydetme
         ShoppingCard cart = new ShoppingCard("kubra", new ArrayList<>(), 0.0);
-        cart.getItems().add(new com.n11bootcamp.shopping_card_service.entity.CardItem(101L, "Integration Test Ürünü", 1, 150.0));
+        cart.getItems().add(new com.n11bootcamp.shopping_card_service.entity.CardItem(101L, "Integration Test Ürünü", 1, 150.0, null, null));
         cart.calculateTotalPrice(); // Başlangıç fiyatı 150.0
         cartRepository.save(cart);
 

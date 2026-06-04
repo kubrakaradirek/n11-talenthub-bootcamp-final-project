@@ -14,7 +14,8 @@ function Login() {
         setMessage({ text: 'Giriş yapılıyor, lütfen bekleyin...', type: 'loading' });
 
         try {
-            const response = await apiClient.post('/api/user/signin', { username, password });
+            localStorage.removeItem("kuba_token");
+            const response = await apiClient.post('/api/user/signin', { username, password }, { skipAuth: true });
 
             if (response.status >= 200 && response.status < 300) {
                 const data = response.data;

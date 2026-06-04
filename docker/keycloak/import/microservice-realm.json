@@ -1,0 +1,50 @@
+{
+  "realm": "microservice-realm",
+  "enabled": true,
+  "roles": {
+    "realm": [
+      {
+        "name": "Customer",
+        "description": "Default customer role for KubaShop users"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "user-service",
+      "name": "user-service",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "wisI6vNCYA1dZFezCkRgWeRjNHPlWdY8",
+      "serviceAccountsEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "bearerOnly": false,
+      "redirectUris": [
+        "http://localhost:5173/*",
+        "http://localhost:8763/*"
+      ],
+      "webOrigins": [
+        "http://localhost:5173",
+        "http://localhost:8763"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "service-account-user-service",
+      "enabled": true,
+      "serviceAccountClientId": "user-service",
+      "clientRoles": {
+        "realm-management": [
+          "manage-users",
+          "view-users",
+          "view-realm"
+        ]
+      }
+    }
+  ]
+}

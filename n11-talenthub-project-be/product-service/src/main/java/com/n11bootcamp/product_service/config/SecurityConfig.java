@@ -9,7 +9,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
-@EnableWebSecurity
+@EnableWebSecurity //Spring security aktif olur jwt, authentication, authorization çalışmaya başlar
 public class SecurityConfig {
 
     @Bean
